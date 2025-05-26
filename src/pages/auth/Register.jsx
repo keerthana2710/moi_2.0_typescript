@@ -27,9 +27,9 @@ export default function Register() {
       navigate('/login');
       toast.success('Registered successfully');
     },
-    onError: (err) => {
-      // const msg = err?.response?.data?.message || 'Something went wrong';
-      toast.error(err?.data?.message);
+    onError: (error) => {
+      const msg = error?.response?.data?.error || 'Something went wrong';
+      toast.error(msg);
       // setError(msg);
     },
   });

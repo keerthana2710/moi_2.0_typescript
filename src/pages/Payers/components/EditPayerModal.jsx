@@ -81,12 +81,7 @@ const CustomDropdown = ({
   );
 };
 
-const EditModal = ({
-  isOpen,
-  onClose,
-  initialData = {},
-  functionData = {},
-}) => {
+const EditModal = ({ isOpen, onClose, initialData = {} }) => {
   const queryClient = useQueryClient();
   const { token } = useAuth();
 
@@ -114,7 +109,6 @@ const EditModal = ({
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    console.log('Initial Payer Data:', initialData);
     if (isOpen && initialData && Object.keys(initialData).length > 0) {
       const paymentTypeFromData = initialData.payer_given_object || 'Cash';
       setPaymentType(paymentTypeFromData);
@@ -150,7 +144,7 @@ const EditModal = ({
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['payers', functionData?.function_id]);
+      queryClient.invalidateQueries(['payers', initialData?.function_id]);
       onClose();
       toast.success('Payer updated successfully!');
     },
@@ -312,21 +306,6 @@ const EditModal = ({
 
         {/* Form Content */}
         <div className='p-6 overflow-y-auto scroll-smooth max-h-[calc(90vh-140px)]'>
-          {/* Function Info */}
-          {functionData && (
-            <div className='mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg'>
-              <h4 className='font-semibold text-blue-800 mb-2'>
-                Function Details
-              </h4>
-              <p className='text-sm text-blue-700'>
-                <strong>Function:</strong> {functionData.function_name}
-              </p>
-              <p className='text-sm text-blue-700'>
-                <strong>Owner:</strong> {functionData.function_owner_name}
-              </p>
-            </div>
-          )}
-
           {/* Edit Reason Section */}
           <div className='mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg'>
             <label className='block text-sm font-semibold mb-2 text-yellow-800'>

@@ -107,7 +107,7 @@ function PayersTable({ data, isLoading, actionType = 'normal' }) {
   };
 
   const handleEdit = (id) => {
-    const itemData = data.find((item) => item.payer_id === id) || {};
+    const itemData = data.find((item) => item._id === id) || {};
     setEditModal({ open: true, id, data: itemData });
     setOpenActionIdx(null);
   };

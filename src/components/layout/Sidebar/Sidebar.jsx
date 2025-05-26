@@ -78,7 +78,7 @@ function Sidebar({ hoveredItem, setHoveredItem, sideBarOpen, setSideBarOpen }) {
                   key={item?.id}
                   onMouseEnter={() => setHoveredItem({ ...item, rank: ind })}
                   onMouseLeave={() => {
-                    if (setHoveredItem && item?.id !== 1 && item?.id !== 8) {
+                    if (setHoveredItem && item?.id !== 1 && item?.id !== 6) {
                       setHoveredItem(null);
                     }
                   }}

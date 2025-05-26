@@ -1,12 +1,10 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 import App from '../App';
-import NotFoundPage from '../pages/NotFoundPage';
+import NotFoundPage from '../pages/error/NotFoundPage';
 
 import PayerListing from '../pages/Payers/PayerListing';
 
-import ChartsPage from '../pages/ChartsPage';
-import ReportsPage from '../pages/ReportsPage';
 import FunctionsListingPage from '../pages/Functions/FuntionsListingPage';
 import CreateFunctionPage from '../pages/Functions/CreateFunctionPage';
 import Login from '../pages/auth/Login';
@@ -14,6 +12,8 @@ import Register from '../pages/auth/Register';
 import FunctionBinListing from '@/pages/Functions/bin/FunctionBinListing';
 import PayerBinListing from '@/pages/Payers/bin/PayerBinListing';
 import ProtectedRoute from '@/pages/ProtectedRoute/ProtectedRoute';
+import ReportsPage from '@/pages/reports/ReportsPage';
+import ChartsPage from '@/pages/reports/ChartsPage';
 
 const router = createBrowserRouter([
   { path: '/login', element: <Login /> },
@@ -24,7 +24,6 @@ const router = createBrowserRouter([
     children: [
       {
         element: <App />,
-        errorElement: <NotFoundPage />,
         children: [
           { path: '/', element: <FunctionsListingPage /> },
           { path: '/create_functions', element: <CreateFunctionPage /> },
@@ -37,6 +36,8 @@ const router = createBrowserRouter([
       },
     ],
   },
+
+  { path: '*', element: <NotFoundPage /> },
 ]);
 
 export default function Router() {

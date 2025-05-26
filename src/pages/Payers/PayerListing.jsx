@@ -1,14 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
-import CustomDropdown from './components/CustomDropdown'; // Import the normal dropdown for function selection
-import { CustomDropdownInput } from '../../components/ui/CustomInputDropdown'; // Import the old dropdown for form fields
+import CustomDropdown from '../../components/ui/CustomDropdown';
+import { CustomDropdownInput } from '../../components/ui/CustomInputDropdown';
 import { FaSave } from 'react-icons/fa';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axiosInstance from '@/utils/AxiosInstance';
 import useAuth from '@/context/useAuth';
 import { toast } from 'react-toastify';
 import PayersTable from './components/PayerTable';
+import useDebounce from '@/hooks/useDebounce'; // Your custom hook
 
-// Sample data for dropdowns
 const cities = [
   'Chennai',
   'Mumbai',
@@ -31,8 +31,9 @@ const relations = [
 
 const paymentMethods = ['Cash', 'Bank Transfer', 'UPI', 'Cheque', 'Other'];
 
+const paymentTypes = ['Cash', 'Gift'];
+
 function PayerListingPage() {
-  // Form element references for navigation
   const formRefs = useRef([]);
   const queryClient = useQueryClient();
   const { token } = useAuth();
@@ -40,6 +41,9 @@ function PayerListingPage() {
   // State for selected function
   const [selectedFunction, setSelectedFunction] = useState(null);
   const [functionSearch, setFunctionSearch] = useState('');
+
+  // Use your custom debounce hook
+  const debouncedFunctionSearch = useDebounce(functionSearch, 300);
 
   // State for form fields
   const [formData, setFormData] = useState({
@@ -59,16 +63,15 @@ function PayerListingPage() {
     current_time: new Date(),
   });
 
-  // Toggle between Cash and Gift
   const [paymentType, setPaymentType] = useState('Cash');
 
-  // Fetch functions for dropdown
+  // Fetch functions for dropdown - ONLY use debounced search in query key
   const { data: functions, isLoading: functionsLoading } = useQuery({
-    queryKey: ['functions', functionSearch],
+    queryKey: ['functions', debouncedFunctionSearch], // Only debounced value
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (functionSearch) {
-        params.append('search', functionSearch);
+      if (debouncedFunctionSearch.trim()) {
+        params.append('search', debouncedFunctionSearch);
       }
       const res = await axiosInstance.get(`/functions?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -111,7 +114,7 @@ function PayerListingPage() {
         payer_name: '',
         payer_phno: '',
         payer_work: '',
-        payer_given_object: 'Cash',
+        payer_given_object: '',
         payer_cash_method: '',
         payer_amount: '',
         payer_gift_name: '',
@@ -130,7 +133,6 @@ function PayerListingPage() {
 
   // Handle function selection
   const handleFunctionSelect = (value) => {
-    // Find the full function data from the functions array
     const functionData = functions?.data?.find(
       (func) => func.function_id === value
     );
@@ -152,25 +154,35 @@ function PayerListingPage() {
     });
   };
 
-  // Handle Enter key to mimic Tab behavior - Fixed navigation logic
+  // Handle payment type change
+  const handlePaymentTypeChange = (value) => {
+    setPaymentType(value);
+    handleInputChange('payer_given_object', value);
+
+    if (value === 'Cash') {
+      handleInputChange('payer_gift_name', '');
+    } else {
+      handleInputChange('payer_amount', '');
+      handleInputChange('payer_cash_method', '');
+    }
+  };
+
+  // Handle Enter key to mimic Tab behavior
   const handleKeyDown = (e, currentIndex) => {
     if (e.key === 'Enter') {
       e.preventDefault();
 
-      // Find the next available input element
       let nextIndex = currentIndex + 1;
       let attempts = 0;
       const maxAttempts = formRefs.current.length;
 
-      // Keep looking for the next focusable element
       while (attempts < maxAttempts) {
         if (nextIndex >= formRefs.current.length) {
-          nextIndex = 0; // Wrap around to the beginning
+          nextIndex = 0;
         }
 
         const nextElement = formRefs.current[nextIndex];
         if (nextElement && nextElement.focus && !nextElement.disabled) {
-          // Check if the element is visible (not hidden by conditional rendering)
           const isVisible = nextElement.offsetParent !== null;
           if (isVisible) {
             nextElement.focus();
@@ -220,7 +232,7 @@ function PayerListingPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paymentType]);
 
-  // Clear refs array when payment type changes to avoid stale references
+  // Clear refs array when payment type changes
   useEffect(() => {
     formRefs.current = [];
   }, [paymentType]);
@@ -251,7 +263,7 @@ function PayerListingPage() {
             options={functionOptions}
             value={selectedFunction?.function_id || ''}
             onChange={handleFunctionSelect}
-            onSearch={setFunctionSearch}
+            onSearch={setFunctionSearch} // This updates immediate search state
             searchable={true}
             loading={functionsLoading}
             required={true}
@@ -316,7 +328,7 @@ function PayerListingPage() {
                 />
               </div>
 
-              {/* Occupation - CustomDropdownInput */}
+              {/* Occupation */}
               <div>
                 <CustomDropdownInput
                   label='செலுத்துபவர் தொழில்'
@@ -330,7 +342,7 @@ function PayerListingPage() {
                 />
               </div>
 
-              {/* Relation - CustomDropdownInput */}
+              {/* Relation */}
               <div>
                 <CustomDropdownInput
                   label='உறவு முறை'
@@ -347,36 +359,22 @@ function PayerListingPage() {
               </div>
 
               {/* Payment Type Selection */}
-              <div className='col-span-2 flex gap-4 my-2'>
-                <div className='flex items-center'>
-                  <input
-                    type='radio'
-                    id='cash'
-                    name='payment_type'
-                    value='Cash'
-                    checked={paymentType === 'Cash'}
-                    onChange={() => setPaymentType('Cash')}
-                    className='mr-2'
-                  />
-                  <label htmlFor='cash'>பணம்</label>
-                </div>
-                <div className='flex items-center'>
-                  <input
-                    type='radio'
-                    id='gift'
-                    name='payment_type'
-                    value='Gift'
-                    checked={paymentType === 'Gift'}
-                    onChange={() => setPaymentType('Gift')}
-                    className='mr-2'
-                  />
-                  <label htmlFor='gift'>பரிசு</label>
-                </div>
+              <div className='col-span-2'>
+                <CustomDropdownInput
+                  label='செலுத்தும் வகை'
+                  placeholder='செலுத்தும் வகை தேர்வு செய்க'
+                  options={paymentTypes}
+                  value={paymentType}
+                  onChange={handlePaymentTypeChange}
+                  onKeyDown={(e) => handleKeyDown(e, 4)}
+                  ref={(el) => (formRefs.current[4] = el)}
+                  required={true}
+                />
               </div>
 
               {paymentType === 'Cash' ? (
                 <>
-                  {/* Cash Method - CustomDropdownInput */}
+                  {/* Cash Method */}
                   <div>
                     <CustomDropdownInput
                       label='செலுத்தும் முறை'
@@ -386,8 +384,8 @@ function PayerListingPage() {
                       onChange={(value) =>
                         handleInputChange('payer_cash_method', value)
                       }
-                      onKeyDown={(e) => handleKeyDown(e, 4)}
-                      ref={(el) => (formRefs.current[4] = el)}
+                      onKeyDown={(e) => handleKeyDown(e, 5)}
+                      ref={(el) => (formRefs.current[5] = el)}
                       required={false}
                     />
                   </div>
@@ -405,8 +403,8 @@ function PayerListingPage() {
                       onChange={(e) =>
                         handleInputChange('payer_amount', e.target.value)
                       }
-                      onKeyDown={(e) => handleKeyDown(e, 5)}
-                      ref={(el) => (formRefs.current[5] = el)}
+                      onKeyDown={(e) => handleKeyDown(e, 6)}
+                      ref={(el) => (formRefs.current[6] = el)}
                     />
                   </div>
                 </>
@@ -423,13 +421,13 @@ function PayerListingPage() {
                     onChange={(e) =>
                       handleInputChange('payer_gift_name', e.target.value)
                     }
-                    onKeyDown={(e) => handleKeyDown(e, 4)}
-                    ref={(el) => (formRefs.current[4] = el)}
+                    onKeyDown={(e) => handleKeyDown(e, 5)}
+                    ref={(el) => (formRefs.current[5] = el)}
                   />
                 </div>
               )}
 
-              {/* City - CustomDropdownInput */}
+              {/* City */}
               <div>
                 <CustomDropdownInput
                   label='செலுத்துபவர் ஊர்'
@@ -437,8 +435,8 @@ function PayerListingPage() {
                   options={cities}
                   value={formData.payer_city}
                   onChange={(value) => handleInputChange('payer_city', value)}
-                  onKeyDown={(e) => handleKeyDown(e, 6)}
-                  ref={(el) => (formRefs.current[6] = el)}
+                  onKeyDown={(e) => handleKeyDown(e, 7)}
+                  ref={(el) => (formRefs.current[7] = el)}
                   required={false}
                 />
               </div>
@@ -456,8 +454,8 @@ function PayerListingPage() {
                   onChange={(e) =>
                     handleInputChange('payer_address', e.target.value)
                   }
-                  onKeyDown={(e) => handleKeyDown(e, 7)}
-                  ref={(el) => (formRefs.current[7] = el)}
+                  onKeyDown={(e) => handleKeyDown(e, 8)}
+                  ref={(el) => (formRefs.current[8] = el)}
                 />
               </div>
             </div>

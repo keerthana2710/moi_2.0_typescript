@@ -11,9 +11,7 @@ function FloatingSideBar({ sideBarOpen, hoveredItem, setHoveredItem }) {
     hoveredItem?.id == 2 ||
     hoveredItem?.id === 3 ||
     hoveredItem?.id === 4 ||
-    hoveredItem?.id === 5 ||
-    hoveredItem?.id === 6 ||
-    hoveredItem?.id === 7
+    hoveredItem?.id === 5
   )
     return;
 

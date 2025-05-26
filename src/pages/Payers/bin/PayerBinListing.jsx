@@ -8,7 +8,7 @@ import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 import Pagination from '@/components/ui/Pagination';
 import PayersTable from '../components/PayerTable';
-import CustomDropdown from '../components/CustomDropdown'; // Import CustomDropdown
+import CustomDropdown from '../../../components/ui/CustomDropdown'; // Import CustomDropdown
 
 function PayerBinListing() {
   const { token } = useAuth();
