@@ -9,16 +9,13 @@ export const SIDEBAR_CONFIG = {
       },
     ],
   },
-  8: {
+  6: {
     root_heading: 'Bin',
-    id: 8,
+    id: 6,
     extension_data: [
       {
         sub_heading: 'Quick Links',
-        data: [
-          { title: 'Payers Bin', link: '/bin/payers_bin' },
-          { title: 'Functions Bin', link: '/bin/functions_bin' },
-        ],
+        data: [{ title: 'Functions Bin', link: '/bin/functions_bin' }],
       },
     ],
   },
