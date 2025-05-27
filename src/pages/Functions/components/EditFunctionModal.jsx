@@ -4,6 +4,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axiosInstance from '@/utils/AxiosInstance';
 import useAuth from '@/context/useAuth';
 import { toast } from 'react-toastify';
+import {
+  formatDateForInput,
+  formatTimeForInput,
+} from '@/helpers/formatDateTime';
 
 const cities = [
   'சென்னை',
@@ -84,21 +88,6 @@ const CustomDatePicker = ({
   placeholder,
   disabled = false,
 }) => {
-  const formatDateForInput = (dateStr) => {
-    if (!dateStr) return '';
-    if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) return dateStr;
-    if (dateStr.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
-      const [day, month, year] = dateStr.split('/');
-      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-    }
-    try {
-      const date = new Date(dateStr);
-      return date.toISOString().split('T')[0];
-    } catch {
-      return '';
-    }
-  };
-
   return (
     <div>
       <label className='block text-sm font-semibold mb-1'>
@@ -129,15 +118,6 @@ const CustomTimePicker = ({
   placeholder,
   disabled = false,
 }) => {
-  const formatTimeForInput = (timeStr) => {
-    if (!timeStr) return '';
-    if (timeStr.match(/^\d{2}:\d{2}$/)) return timeStr;
-    if (timeStr.match(/^\d{2}:\d{2}:\d{2}$/)) {
-      return timeStr.substring(0, 5);
-    }
-    return timeStr;
-  };
-
   return (
     <div>
       <label className='block text-sm font-semibold mb-1'>
@@ -162,9 +142,13 @@ const CustomTimePicker = ({
 const EditFunctionModal = ({ isOpen, onClose, initialData = {} }) => {
   const queryClient = useQueryClient();
   const { token } = useAuth();
+
   // State for edit reason
   const [editReason, setEditReason] = useState('');
   const [isReasonLocked, setIsReasonLocked] = useState(false);
+
+  // State to track original values for comparison
+  const [originalFormData, setOriginalFormData] = useState({});
 
   // Helper functions for data formatting
   const formatDateForForm = (dateStr) => {
@@ -214,7 +198,7 @@ const EditFunctionModal = ({ isOpen, onClose, initialData = {} }) => {
   useEffect(() => {
     console.log('Initial Data:', initialData);
     if (isOpen && initialData && Object.keys(initialData).length > 0) {
-      setFormData({
+      const formattedData = {
         function_name: initialData.function_name || '',
         function_owner_name: initialData.function_owner_name || '',
         function_owner_city: initialData.function_owner_city || '',
@@ -230,7 +214,11 @@ const EditFunctionModal = ({ isOpen, onClose, initialData = {} }) => {
         function_end_date: formatDateForForm(initialData.function_end_date),
         function_end_time: formatTimeForForm(initialData.function_end_time),
         function_total_days: initialData.function_total_days?.toString() || '1',
-      });
+      };
+
+      setFormData(formattedData);
+      // Store original data for comparison
+      setOriginalFormData(formattedData);
       setErrors({});
       // Reset edit reason state when modal opens
       setEditReason('');
@@ -254,6 +242,39 @@ const EditFunctionModal = ({ isOpen, onClose, initialData = {} }) => {
     }
     return '1';
   }, [formData.function_start_date, formData.function_end_date]);
+
+  // Function to get only changed fields
+  const getChangedFields = () => {
+    const changedFields = {};
+
+    // Compare current form data with original data
+    Object.keys(formData).forEach((key) => {
+      let currentValue = formData[key];
+      let originalValue = originalFormData[key];
+
+      // Special handling for numeric fields
+      if (key === 'function_amt_spent') {
+        currentValue = parseFloat(currentValue) || 0;
+        originalValue = parseFloat(originalValue) || 0;
+      } else if (key === 'function_total_days') {
+        currentValue = parseInt(calculatedTotalDays) || 1;
+        originalValue = parseInt(originalValue) || 1;
+      }
+
+      // Check if values are different
+      if (currentValue !== originalValue) {
+        if (key === 'function_amt_spent') {
+          changedFields[key] = parseFloat(formData[key]);
+        } else if (key === 'function_total_days') {
+          changedFields[key] = parseInt(calculatedTotalDays);
+        } else {
+          changedFields[key] = formData[key];
+        }
+      }
+    });
+
+    return changedFields;
+  };
 
   // Update mutation
   const updateMutation = useMutation({
@@ -387,13 +408,21 @@ const EditFunctionModal = ({ isOpen, onClose, initialData = {} }) => {
   // Handle form submission
   const handleSubmit = () => {
     if (validateForm()) {
+      const changedFields = getChangedFields();
+
+      // Check if any fields have actually changed
+      if (Object.keys(changedFields).length === 0) {
+        toast.info('No changes detected to update.');
+        return;
+      }
+
+      // Prepare payload with only changed fields and edit reason
       const submitData = {
-        ...formData,
-        function_amt_spent: parseFloat(formData.function_amt_spent),
-        function_total_days: parseInt(calculatedTotalDays),
-        reason_for_edit: editReason.trim(), // Include edit reason in submission
+        ...changedFields,
+        reason_for_edit: editReason.trim(),
       };
 
+      console.log('Submitting only changed fields:', submitData);
       updateMutation.mutate(submitData);
     } else {
       alert('Please fill in all required fields correctly');
@@ -413,6 +442,10 @@ const EditFunctionModal = ({ isOpen, onClose, initialData = {} }) => {
   };
 
   const isFormDisabled = !editReason.trim();
+
+  // Get changed fields for display
+  const changedFields = getChangedFields();
+  const hasChanges = Object.keys(changedFields).length > 0;
 
   if (!isOpen) return null;
 
@@ -469,6 +502,15 @@ const EditFunctionModal = ({ isOpen, onClose, initialData = {} }) => {
                 ⚠️ Once you start editing other fields, this reason cannot be
                 changed.
               </p>
+            )}
+            {/* Show changed fields indicator */}
+            {hasChanges && (
+              <div className='mt-2 p-2 bg-green-50 border border-green-200 rounded'>
+                <p className='text-xs text-green-700 font-semibold'>
+                  Changed fields detected: {Object.keys(changedFields).length}{' '}
+                  field(s) will be updated
+                </p>
+              </div>
             )}
           </div>
 
@@ -745,44 +787,92 @@ const EditFunctionModal = ({ isOpen, onClose, initialData = {} }) => {
               />
             </div>
 
-            {/* Total Days - Read Only */}
-            <div className='flex flex-col gap-2 md:col-span-2'>
+            {/* Total Days (Read-only, calculated) */}
+            <div className='flex flex-col gap-2'>
               <label className='text-sm font-semibold'>
-                மொத்த நாட்கள் (கணக்கிடப்பட்டது)
+                <span className='text-red-500 mr-1'>*</span>மொத்த நாட்கள்
               </label>
               <input
                 type='text'
-                className='w-full border rounded p-2 bg-gray-100 cursor-not-allowed'
+                className='w-full border rounded p-2 bg-gray-100 cursor-not-allowed border-gray-300'
                 value={calculatedTotalDays}
+                disabled={true}
                 readOnly
-                disabled
               />
+              <span className='text-xs text-gray-600'>
+                Automatically calculated based on start and end dates
+              </span>
             </div>
           </div>
+
+          {/* Display changes summary if any */}
+          {hasChanges && (
+            <div className='my-6 p-4 bg-blue-50 border border-blue-200 rounded-lg'>
+              <h4 className='text-sm font-semibold text-blue-800 mb-2'>
+                Fields to be Updated:
+              </h4>
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-2 text-xs'>
+                {Object.entries(changedFields).map(([key, value]) => (
+                  <div key={key} className='flex gap-5'>
+                    <span className='text-md font-medium text-blue-700'>
+                      {key
+                        .replace(/_/g, ' ')
+                        .replace(/\b\w/g, (l) => l.toUpperCase())}
+                      :
+                    </span>
+                    <span className='text-blue-600 ml-2'>
+                      {typeof value === 'object'
+                        ? JSON.stringify(value)
+                        : value.toString()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Footer */}
-        <div className=' flex justify-end gap-4 p-6 border-t border-gray-200 bg-gray-50'>
+        {/* Footer with Action Buttons */}
+        <div className='flex justify-end gap-4 p-6 border-t border-gray-200 bg-gray-50'>
           <button
+            type='button'
             onClick={onClose}
-            className='px-6 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100 transition-colors'
+            className='px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-200'
             disabled={updateMutation.isPending}
           >
             Cancel
           </button>
           <button
+            type='button'
             onClick={handleSubmit}
-            disabled={updateMutation.isPending || !editReason.trim()}
-            className={`px-6 py-2 rounded flex items-center gap-2 transition-colors ${
-              updateMutation.isPending || !editReason.trim()
-                ? 'bg-gray-400 cursor-not-allowed text-white'
-                : 'bg-darkBlue hover:scale-105 transition-all duration-200 text-white'
+            disabled={
+              updateMutation.isPending ||
+              !editReason.trim() ||
+              !hasChanges ||
+              Object.keys(errors).length > 0
+            }
+            className={`px-6 py-2 rounded-lg flex items-center gap-2 transition-all duration-200 ${
+              updateMutation.isPending || !editReason.trim() || !hasChanges
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-darkBlue text-white hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg'
             }`}
           >
             <Save size={16} />
             {updateMutation.isPending ? 'Updating...' : 'Update Function'}
           </button>
         </div>
+
+        {/* Loading Overlay */}
+        {updateMutation.isPending && (
+          <div className='absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10'>
+            <div className='flex items-center gap-3'>
+              <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-darkBlue'></div>
+              <span className='text-darkBlue font-medium'>
+                Updating function...
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

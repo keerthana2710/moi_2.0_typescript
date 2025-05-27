@@ -40,6 +40,7 @@ function PayerBinListing() {
       return res.data;
     },
     enabled: !!token,
+    staleTime: Infinity,
   });
 
   const fetchPayers = async (page, pageFetch, searchQuery, functionId) => {
@@ -86,16 +87,14 @@ function PayerBinListing() {
         debouncedSearchQuery,
         selectedFunction?.function_id
       ),
-    keepPreviousData: true,
+    staleTime: Infinity,
   });
 
   // Handle function selection
   const handleFunctionSelect = (value) => {
     if (value === '') {
-      // Clear selection
       setSelectedFunction(null);
     } else {
-      // Find the full function data from the functions array
       const functionData = functions?.data?.find(
         (func) => func.function_id === value
       );
@@ -103,7 +102,6 @@ function PayerBinListing() {
         setSelectedFunction(functionData);
       }
     }
-    // Reset page to 1 when function selection changes
     setPage(1);
   };
 
@@ -167,6 +165,10 @@ function PayerBinListing() {
           data={payersBinData?.data || []}
           isLoading={isLoading}
           actionType='bin'
+          selectedFunctionId={selectedFunction?.function_id}
+          page={page}
+          pageFetch={pageFetch}
+          debouncedSearchQuery={debouncedSearchQuery}
         />
 
         <Pagination

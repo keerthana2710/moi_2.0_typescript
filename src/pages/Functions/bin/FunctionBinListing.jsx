@@ -41,9 +41,6 @@ function FunctionBinListing() {
         setTotalPage(response?.data?.pagination?.total);
         return response.data;
       }
-      // else{
-      //   toast.error()
-      // }
     } catch (err) {
       toast.error('Failed to fetch data');
       console.error(err);
@@ -53,7 +50,7 @@ function FunctionBinListing() {
   const { data: functionsBinData, isLoading } = useQuery({
     queryKey: ['functions_bin', { page, pageFetch, debouncedSearchQuery }],
     queryFn: () => fetchFunctions(page, pageFetch, debouncedSearchQuery),
-    keepPreviousData: true,
+    staleTime: Infinity,
   });
 
   return (

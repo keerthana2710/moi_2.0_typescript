@@ -13,7 +13,15 @@ import useAuth from '@/context/useAuth';
 import { toast } from 'react-toastify';
 import EditModal from './EditPayerModal';
 
-function PayersTable({ data, isLoading, actionType = 'normal' }) {
+function PayersTable({
+  data,
+  isLoading,
+  actionType = 'normal',
+  selectedFunctionId,
+  page,
+  pageFetch,
+  debouncedSearchQuery,
+}) {
   const [openActionIdx, setOpenActionIdx] = useState(null);
   const [deleteModal, setDeleteModal] = useState({ open: false, id: null });
   const [editModal, setEditModal] = useState({
@@ -62,7 +70,16 @@ function PayersTable({ data, isLoading, actionType = 'normal' }) {
     },
     onSuccess: () => {
       toast.success('Payer deleted successfully');
-      queryClient.invalidateQueries(['payers']);
+      console.log(page, pageFetch, debouncedSearchQuery, selectedFunctionId);
+      queryClient.invalidateQueries({
+        queryKey: ['payers', selectedFunctionId],
+        exact: true,
+      });
+      queryClient.invalidateQueries({
+        predicate: (query) => {
+          return query.queryKey[0] === 'payers_bin';
+        },
+      });
       setDeleteModal({ open: false, id: null });
     },
   });
@@ -77,7 +94,13 @@ function PayersTable({ data, isLoading, actionType = 'normal' }) {
     },
     onSuccess: () => {
       toast.success('Payer permanently deleted');
-      queryClient.invalidateQueries(['payers_bin']);
+      queryClient.invalidateQueries({
+        queryKey: [
+          'payers_bin',
+          { page, pageFetch, debouncedSearchQuery, selectedFunctionId },
+        ],
+        exact: true,
+      });
       setDeleteModal({ open: false, id: null });
     },
   });
@@ -96,8 +119,18 @@ function PayersTable({ data, isLoading, actionType = 'normal' }) {
     },
     onSuccess: () => {
       toast.success('Payer restored successfully');
-      queryClient.invalidateQueries(['payers_bin']);
-      queryClient.invalidateQueries(['payers']);
+      queryClient.refetchQueries({
+        queryKey: [
+          'payers_bin',
+          { page, pageFetch, debouncedSearchQuery, selectedFunctionId },
+        ],
+        exact: true,
+      });
+      queryClient.invalidateQueries({
+        predicate: (query) => {
+          return query.queryKey[0] === 'payers';
+        },
+      });
     },
   });
 

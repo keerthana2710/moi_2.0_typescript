@@ -12,6 +12,8 @@ import DeleteConfirmationModal from './DeleteFunctionModal';
 import EditModal from './EditFunctionModal';
 import useAuth from '@/context/useAuth';
 import { toast } from 'react-toastify';
+import { FileX } from 'lucide-react';
+import NoDataPlaceholder from '@/components/ui/NoDataPlaceholder';
 
 function FunctionsTable({ data, isLoading, actionType = 'normal' }) {
   const [openActionIdx, setOpenActionIdx] = useState(null);
@@ -68,6 +70,7 @@ function FunctionsTable({ data, isLoading, actionType = 'normal' }) {
     onSuccess: () => {
       toast.success('Function deleted successfully');
       queryClient.invalidateQueries(['functions']);
+      queryClient.invalidateQueries(['functions_bin']);
       setDeleteModal({ open: false, id: null });
     },
   });
@@ -238,23 +241,30 @@ function FunctionsTable({ data, isLoading, actionType = 'normal' }) {
       <h2 className='text-xl font-semibold mb-4 text-blue-700'>
         செலுத்துபவர் பட்டியல்
       </h2>
-      <div className='overflow-x-auto select-none rounded-xl border border-gray-300'>
-        <table className='table-auto w-full z-10'>
-          <thead className='bg-lightBlue'>
-            <tr className='text-left text-gray-700 font-extrabold text-sm'>
-              {headers.map((h) => (
-                <th key={h.key} className='px-4 py-3 whitespace-nowrap'>
-                  {h.label}
+      {data?.length ? (
+        <div className='overflow-x-auto select-none rounded-xl border border-gray-300'>
+          <table className='table-auto w-full z-10'>
+            <thead className='bg-lightBlue'>
+              <tr className='text-left text-gray-700 font-extrabold text-sm'>
+                {headers.map((h) => (
+                  <th key={h.key} className='px-4 py-3 whitespace-nowrap'>
+                    {h.label}
+                  </th>
+                ))}
+                <th className='sticky right-0 px-4 py-3 text-right bg-lightBlue'>
+                  Actions
                 </th>
-              ))}
-              <th className='sticky right-0 px-4 py-3 text-right bg-lightBlue'>
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>{renderTableBody()}</tbody>
-        </table>
-      </div>
+              </tr>
+            </thead>
+            <tbody>{renderTableBody()}</tbody>
+          </table>
+        </div>
+      ) : (
+        <NoDataPlaceholder
+          message='தகவல்கள் இல்லை'
+          subtext='புதிய தகவல்களை சேர்க்கவும் அல்லது தேடல் மற்றும் வடிகட்டுதல்களை மாற்றி முயற்சிக்கவும்.'
+        />
+      )}
 
       <DeleteConfirmationModal
         isOpen={deleteModal.open}

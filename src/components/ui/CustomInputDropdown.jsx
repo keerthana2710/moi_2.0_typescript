@@ -197,6 +197,7 @@ export const CustomDropdownInput = forwardRef(
             onKeyDown={handleKeyDown}
             className='pl-4 pr-10 rounded-md h-10 border w-full focus:outline-none focus:ring-2 focus:ring-darkBlue'
             ref={inputRef}
+            autoComplete='off'
           />
           <button
             type='button'
