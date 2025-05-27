@@ -92,6 +92,9 @@ const EditModal = ({ isOpen, onClose, initialData = {} }) => {
   // State for payment type
   const [paymentType, setPaymentType] = useState('Cash');
 
+  // State to track original values for comparison
+  const [originalFormData, setOriginalFormData] = useState({});
+
   // Initialize state with empty values first
   const [formData, setFormData] = useState({
     payer_name: '',
@@ -113,7 +116,7 @@ const EditModal = ({ isOpen, onClose, initialData = {} }) => {
       const paymentTypeFromData = initialData.payer_given_object || 'Cash';
       setPaymentType(paymentTypeFromData);
 
-      setFormData({
+      const formattedData = {
         payer_name: initialData.payer_name || '',
         payer_phno: initialData.payer_phno || '',
         payer_work: initialData.payer_work || '',
@@ -124,13 +127,45 @@ const EditModal = ({ isOpen, onClose, initialData = {} }) => {
         payer_relation: initialData.payer_relation || '',
         payer_city: initialData.payer_city || '',
         payer_address: initialData.payer_address || '',
-      });
+      };
+
+      setFormData(formattedData);
+      // Store original data for comparison
+      setOriginalFormData(formattedData);
       setErrors({});
       // Reset edit reason state when modal opens
       setEditReason('');
       setIsReasonLocked(false);
     }
   }, [isOpen, initialData]);
+
+  // Function to get only changed fields
+  const getChangedFields = () => {
+    const changedFields = {};
+
+    // Compare current form data with original data
+    Object.keys(formData).forEach((key) => {
+      let currentValue = formData[key];
+      let originalValue = originalFormData[key];
+
+      // Special handling for numeric fields
+      if (key === 'payer_amount') {
+        currentValue = parseFloat(currentValue) || 0;
+        originalValue = parseFloat(originalValue) || 0;
+      }
+
+      // Check if values are different
+      if (currentValue !== originalValue) {
+        if (key === 'payer_amount') {
+          changedFields[key] = parseFloat(formData[key]) || null;
+        } else {
+          changedFields[key] = formData[key];
+        }
+      }
+    });
+
+    return changedFields;
+  };
 
   // Update mutation
   const updateMutation = useMutation({
@@ -144,7 +179,10 @@ const EditModal = ({ isOpen, onClose, initialData = {} }) => {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['payers', initialData?.function_id]);
+      queryClient.invalidateQueries({
+        queryKey: ['payers', initialData?.function_id],
+        exact: true,
+      });
       onClose();
       toast.success('Payer updated successfully!');
     },
@@ -258,13 +296,26 @@ const EditModal = ({ isOpen, onClose, initialData = {} }) => {
   // Handle form submission
   const handleSubmit = () => {
     if (validateForm()) {
+      const changedFields = getChangedFields();
+
+      // Check if any fields have actually changed
+      if (Object.keys(changedFields).length === 0) {
+        toast.info('No changes detected to update.');
+        return;
+      }
+
+      // Prepare payload with only changed fields and edit reason
       const submitData = {
-        ...formData,
-        payer_amount:
-          paymentType === 'Cash' ? parseFloat(formData.payer_amount) : null,
-        reason_for_edit: editReason.trim(), // Include edit reason in submission
+        ...changedFields,
+        reason_for_edit: editReason.trim(),
       };
 
+      // Ensure payer_amount is properly handled for cash payments
+      if (changedFields.payer_amount !== undefined && paymentType === 'Cash') {
+        submitData.payer_amount = parseFloat(formData.payer_amount) || null;
+      }
+
+      console.log('Submitting only changed fields:', submitData);
       updateMutation.mutate(submitData);
     } else {
       alert('Please fill in all required fields correctly');
@@ -284,6 +335,10 @@ const EditModal = ({ isOpen, onClose, initialData = {} }) => {
   };
 
   const isFormDisabled = !editReason.trim();
+
+  // Get changed fields for display
+  const changedFields = getChangedFields();
+  const hasChanges = Object.keys(changedFields).length > 0;
 
   if (!isOpen) return null;
 
@@ -340,6 +395,15 @@ const EditModal = ({ isOpen, onClose, initialData = {} }) => {
                 ⚠️ Once you start editing other fields, this reason cannot be
                 changed.
               </p>
+            )}
+            {/* Show changed fields indicator */}
+            {hasChanges && (
+              <div className='mt-2 p-2 bg-green-50 border border-green-200 rounded'>
+                <p className='text-xs text-green-700 font-semibold'>
+                  Changed fields detected: {Object.keys(changedFields).length}{' '}
+                  field(s) will be updated
+                </p>
+              </div>
             )}
           </div>
 
@@ -564,30 +628,77 @@ const EditModal = ({ isOpen, onClose, initialData = {} }) => {
               )}
             </div>
           </div>
+
+          {/* Display changes summary if any */}
+          {hasChanges && (
+            <div className='my-6 p-4 bg-blue-50 border border-blue-200 rounded-lg'>
+              <h4 className='text-sm font-semibold text-blue-800 mb-2'>
+                Fields to be Updated:
+              </h4>
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-2 text-xs'>
+                {Object.entries(changedFields).map(([key, value]) => (
+                  <div key={key} className='flex gap-5'>
+                    <span className='text-md font-medium text-blue-700'>
+                      {key
+                        .replace(/_/g, ' ')
+                        .replace(/\b\w/g, (l) => l.toUpperCase())}
+                      :
+                    </span>
+                    <span className='text-blue-600 ml-2'>
+                      {typeof value === 'object'
+                        ? JSON.stringify(value)
+                        : value === null
+                        ? 'null'
+                        : value.toString()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Footer */}
+        {/* Footer with Action Buttons */}
         <div className='flex justify-end gap-4 p-6 border-t border-gray-200 bg-gray-50'>
           <button
+            type='button'
             onClick={onClose}
-            className='px-6 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100 transition-colors'
+            className='px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-200'
             disabled={updateMutation.isPending}
           >
             Cancel
           </button>
           <button
+            type='button'
             onClick={handleSubmit}
-            disabled={updateMutation.isPending || !editReason.trim()}
-            className={`px-6 py-2 rounded flex items-center gap-2 transition-colors ${
-              updateMutation.isPending || !editReason.trim()
-                ? 'bg-gray-400 cursor-not-allowed text-white'
-                : 'bg-darkBlue hover:scale-105 transition-all duration-200 text-white'
+            disabled={
+              updateMutation.isPending ||
+              !editReason.trim() ||
+              !hasChanges ||
+              Object.keys(errors).length > 0
+            }
+            className={`px-6 py-2 rounded-lg flex items-center gap-2 transition-all duration-200 ${
+              updateMutation.isPending || !editReason.trim() || !hasChanges
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-darkBlue text-white hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg'
             }`}
           >
             <Save size={16} />
             {updateMutation.isPending ? 'Updating...' : 'Update Payer'}
           </button>
         </div>
+
+        {/* Loading Overlay */}
+        {updateMutation.isPending && (
+          <div className='absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10'>
+            <div className='flex items-center gap-3'>
+              <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-darkBlue'></div>
+              <span className='text-darkBlue font-medium'>
+                Updating payer...
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

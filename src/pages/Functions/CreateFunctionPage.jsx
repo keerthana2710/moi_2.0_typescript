@@ -6,7 +6,7 @@ import {
   CustomTimePickerInput,
 } from '../../components/ui/CustomDatePicker';
 import { FaSave } from 'react-icons/fa';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../../context/useAuth';
@@ -34,6 +34,7 @@ function CreateFunctionPage() {
   const formRefs = useRef([]);
   const navigate = useNavigate();
   const { token } = useAuth();
+  const queryClient = useQueryClient();
   const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
     function_name: '',
@@ -254,8 +255,10 @@ function CreateFunctionPage() {
 
   const { mutate: addFunction } = useMutation({
     mutationFn: submitFormData,
-    onSuccess: (data) => {
-      console.log(data);
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['functions'],
+      });
       toast.success('Function Created');
       navigate('/');
     },

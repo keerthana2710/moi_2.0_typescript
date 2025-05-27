@@ -8,6 +8,7 @@ import useAuth from '@/context/useAuth';
 import { toast } from 'react-toastify';
 import PayersTable from './components/PayerTable';
 import useDebounce from '@/hooks/useDebounce'; // Your custom hook
+import NoDataPlaceholder from '@/components/ui/NoDataPlaceholder';
 
 const cities = [
   'Chennai',
@@ -65,7 +66,6 @@ function PayerListingPage() {
 
   const [paymentType, setPaymentType] = useState('Cash');
 
-  // Fetch functions for dropdown - ONLY use debounced search in query key
   const { data: functions, isLoading: functionsLoading } = useQuery({
     queryKey: ['functions', debouncedFunctionSearch], // Only debounced value
     queryFn: async () => {
@@ -78,7 +78,7 @@ function PayerListingPage() {
       });
       return res.data;
     },
-    enabled: !!token,
+    staleTime: Infinity,
   });
 
   // Fetch payers for selected function
@@ -94,6 +94,7 @@ function PayerListingPage() {
       return res.data;
     },
     enabled: !!selectedFunction?.function_id && !!token,
+    staleTime: Infinity,
   });
 
   // Create payer mutation
@@ -106,8 +107,10 @@ function PayerListingPage() {
     },
     onSuccess: () => {
       toast.success('Payer added successfully');
-      queryClient.invalidateQueries(['payers', selectedFunction?.function_id]);
-      // Reset form
+      queryClient.invalidateQueries({
+        queryKey: ['payers', selectedFunction?.function_id],
+        exact: true,
+      });
       setFormData({
         function_id: selectedFunction?.function_id || '',
         function_name: selectedFunction?.function_name || '',
@@ -472,11 +475,16 @@ function PayerListingPage() {
           </div>
 
           {/* Table Section */}
-          <PayersTable
-            data={payers?.data}
-            isLoading={payersLoading}
-            actionType='normal'
-          />
+          {payers?.data?.length ? (
+            <PayersTable
+              data={payers?.data}
+              isLoading={payersLoading}
+              actionType='normal'
+              selectedFunctionId={selectedFunction?.function_id}
+            />
+          ) : (
+            <NoDataPlaceholder subtext='புதிய தகவல்களை சேர்க்கவும் அல்லது தேடல் மற்றும் வடிகட்டுதல்களை மாற்றி முயற்சிக்கவும்.' />
+          )}
         </div>
       )}
 

@@ -41,11 +41,8 @@ function FunctionsListingPage() {
         setTotalPage(response?.data?.pagination?.total);
         return response.data;
       }
-      // else{
-      //   toast.error()
-      // }
     } catch (err) {
-      toast.error('Failed to fetch data');
+      toast.error(err);
       console.error(err);
     }
   };
@@ -53,7 +50,7 @@ function FunctionsListingPage() {
   const { data: functionsData, isLoading } = useQuery({
     queryKey: ['functions', { page, pageFetch, debouncedSearchQuery }],
     queryFn: () => fetchFunctions(page, pageFetch, debouncedSearchQuery),
-    keepPreviousData: true,
+    staleTime: Infinity,
   });
 
   return (
