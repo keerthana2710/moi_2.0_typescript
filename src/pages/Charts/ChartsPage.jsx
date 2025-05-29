@@ -17,6 +17,10 @@ import { useQuery } from '@tanstack/react-query';
 import useAuth from '@/context/useAuth';
 import axiosInstance from '@/utils/AxiosInstance';
 import useDebounce from '@/hooks/useDebounce';
+import { MdPayments } from 'react-icons/md';
+import { TbCirclesRelation } from 'react-icons/tb';
+import { IoMdGlobe } from 'react-icons/io';
+import { FaGift, FaMoneyBill, FaTrophy } from 'react-icons/fa';
 
 const COLORS = {
   primary: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'],
@@ -200,12 +204,12 @@ function FunctionChartsPage() {
 
   // Chart selection buttons
   const chartButtons = [
-    { id: 'payment-methods', label: 'Payment Methods', icon: '💳' },
-    { id: 'relations', label: 'Relations', icon: '👥' },
-    { id: 'cities', label: 'Cities', icon: '🌍' },
-    { id: 'amounts', label: 'Amount Ranges', icon: '💰' },
-    { id: 'cash-gifts', label: 'Cash vs Gifts', icon: '🎁' },
-    { id: 'top-contributors', label: 'Top Contributors', icon: '🏆' },
+    { id: 'payment-methods', label: 'Payment Methods', icon: MdPayments },
+    { id: 'relations', label: 'Relations', icon: TbCirclesRelation },
+    { id: 'cities', label: 'Cities', icon: IoMdGlobe },
+    { id: 'amounts', label: 'Amount Ranges', icon: FaMoneyBill },
+    { id: 'cash-gifts', label: 'Cash vs Gifts', icon: FaGift },
+    { id: 'top-contributors', label: 'Top Contributors', icon: FaTrophy },
   ];
 
   // Render Payment Methods Chart

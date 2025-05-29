@@ -4,88 +4,22 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axiosInstance from '@/utils/AxiosInstance';
 import useAuth from '@/context/useAuth';
 import { toast } from 'react-toastify';
-
-const cities = [
-  'Chennai',
-  'Mumbai',
-  'Delhi',
-  'Bangalore',
-  'Hyderabad',
-  'Kolkata',
-];
-
-const occupations = ['Doctor', 'Engineer', 'Teacher', 'Business', 'Other'];
-
-const relations = [
-  'Friend',
-  'Family',
-  'Colleague',
-  'Neighbor',
-  'Relative',
-  'Other',
-];
+import {
+  useUniqueCities,
+  useUniqueRelations,
+  useUniqueWorkTypes,
+} from '@/hooks/useUniqueValue';
+import CustomDropdown from '@/components/ui/CustomDropdown';
 
 const paymentMethods = ['Cash', 'Bank Transfer', 'UPI', 'Cheque', 'Other'];
-
-// Custom Dropdown Component
-const CustomDropdown = ({
-  label,
-  options,
-  value,
-  onChange,
-  error,
-  className = '',
-  disabled = false,
-  required = false,
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <div className='relative'>
-      <label className='block text-sm font-semibold mb-1'>
-        {required && <span className='text-red-500 mr-1'>*</span>}
-        {label}
-      </label>
-      <div className='relative'>
-        <button
-          type='button'
-          onClick={() => !disabled && setIsOpen(!isOpen)}
-          disabled={disabled}
-          className={`w-full border rounded p-2 text-left focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none ${
-            error ? 'border-red-500 bg-red-50' : 'border-gray-300'
-          } ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''} ${className}`}
-        >
-          {value || 'Select option'}
-          <span className='float-right'>▼</span>
-        </button>
-
-        {isOpen && !disabled && (
-          <div className='absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-40 overflow-y-auto'>
-            {options.map((option, index) => (
-              <div
-                key={index}
-                className='p-2 hover:bg-blue-100 cursor-pointer'
-                onClick={() => {
-                  onChange(option);
-                  setIsOpen(false);
-                }}
-              >
-                {option}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-      {error && <span className='text-red-500 text-xs mt-1'>{error}</span>}
-    </div>
-  );
-};
 
 const EditModal = ({ isOpen, onClose, initialData = {} }) => {
   const queryClient = useQueryClient();
   const { token } = useAuth();
+  const cities = useUniqueCities();
+  const occupations = useUniqueWorkTypes();
+  const relations = useUniqueRelations();
 
-  // State for edit reason
   const [editReason, setEditReason] = useState('');
   const [isReasonLocked, setIsReasonLocked] = useState(false);
 

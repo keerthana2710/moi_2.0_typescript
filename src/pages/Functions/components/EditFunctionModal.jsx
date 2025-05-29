@@ -8,15 +8,7 @@ import {
   formatDateForInput,
   formatTimeForInput,
 } from '@/helpers/formatDateTime';
-
-const cities = [
-  'சென்னை',
-  'மும்பை',
-  'டெல்லி',
-  'பெங்களூரு',
-  'ஹைதராபாத்',
-  'கொல்கத்தா',
-];
+import { useUniqueCities } from '@/hooks/useUniqueValue';
 
 const functionTypes = [
   'திருமண வரவேற்பு',
@@ -142,14 +134,10 @@ const CustomTimePicker = ({
 const EditFunctionModal = ({ isOpen, onClose, initialData = {} }) => {
   const queryClient = useQueryClient();
   const { token } = useAuth();
-
-  // State for edit reason
   const [editReason, setEditReason] = useState('');
-
-  // State to track original values for comparison
   const [originalFormData, setOriginalFormData] = useState({});
+  const cities = useUniqueCities();
 
-  // Helper functions for data formatting
   const formatDateForForm = (dateStr) => {
     if (!dateStr) return '';
     try {

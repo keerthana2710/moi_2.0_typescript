@@ -10,29 +10,11 @@ import PayersTable from './components/PayerTable';
 import useDebounce from '@/hooks/useDebounce';
 import NoDataPlaceholder from '@/components/ui/NoDataPlaceholder';
 import { BillPreview } from '../BillDetails/components/BillPreview';
-
-const cities = [
-  'Chennai',
-  'Mumbai',
-  'Delhi',
-  'Bangalore',
-  'Hyderabad',
-  'Kolkata',
-];
-
-const occupations = ['Doctor', 'Engineer', 'Teacher', 'Business', 'Other'];
-
-const relations = [
-  'Friend',
-  'Family',
-  'Colleague',
-  'Neighbor',
-  'Relative',
-  'Other',
-];
-
-const paymentMethods = ['Cash', 'Bank Transfer', 'UPI', 'Cheque', 'Other'];
-const paymentTypes = ['Cash', 'Gift'];
+import {
+  useUniqueCities,
+  useUniqueRelations,
+  useUniqueWorkTypes,
+} from '@/hooks/useUniqueValue';
 
 // Modal Component for Bill Preview
 const BillPreviewModal = ({
@@ -326,9 +308,25 @@ const BillPreviewModal = ({
 };
 
 function PayerListingPage() {
+  const paymentMethods = [
+    'Cash',
+    'Google Pay',
+    'PhonePe',
+    'Paytm',
+    'Bank Transfer',
+    'Other',
+  ];
   const formRefs = useRef([]);
   const queryClient = useQueryClient();
   const { token } = useAuth();
+
+  const cities = useUniqueCities();
+
+  const occupations = useUniqueWorkTypes();
+
+  const relations = useUniqueRelations();
+
+  const paymentTypes = ['Cash', 'Gift'];
 
   // State for modal
   const [showPreviewModal, setShowPreviewModal] = useState(false);
@@ -477,7 +475,6 @@ function PayerListingPage() {
     },
     onSuccess: (context) => {
       toast.success('Payer added successfully');
-
       // Invalidate queries first
       queryClient.invalidateQueries({
         queryKey: ['payers', selectedFunction?.function_id],
