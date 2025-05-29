@@ -7,8 +7,8 @@ import PayerListing from '../pages/Payers/PayerListing';
 
 import FunctionsListingPage from '../pages/Functions/FuntionsListingPage';
 import CreateFunctionPage from '../pages/Functions/CreateFunctionPage';
-import Login from '../pages/Auth/Login';
-import Register from '../pages/Auth/Register';
+import Login from '../pages/auth/Login';
+import Register from '../pages/auth/Register';
 import FunctionBinListing from '@/pages/Functions/bin/FunctionBinListing';
 import PayerBinListing from '@/pages/Payers/bin/PayerBinListing';
 import ProtectedRoute from '@/pages/ProtectedRoute/ProtectedRoute';
