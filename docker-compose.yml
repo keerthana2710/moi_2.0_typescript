@@ -6,6 +6,6 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - '3000:80'
+      - '3001:80'
     restart: unless-stopped
     container_name: moi_2.0_frontend
