@@ -11,19 +11,12 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../../context/useAuth';
 import axiosInstance from '@/utils/AxiosInstance';
+import { useUniqueCities } from '@/hooks/useUniqueValue';
 
-const cities = [
-  'சென்னை',
-  'மும்பை',
-  'டெல்லி',
-  'பெங்களூரு',
-  'ஹைதராபாத்',
-  'கொல்கத்தா',
-];
 const functionTypes = [
+  'திருமண நாள் விழா',
   'திருமண வரவேற்பு',
   'பிறந்தநாள் விழா',
-  'திருமண நாள் விழா',
   'நிறுவன விழா',
   'மற்றவை',
 ];
@@ -34,6 +27,7 @@ function CreateFunctionPage() {
   const { token } = useAuth();
   const queryClient = useQueryClient();
   const [errors, setErrors] = useState({});
+  const cities = useUniqueCities();
 
   // Initialize with current date and time
   const now = new Date();

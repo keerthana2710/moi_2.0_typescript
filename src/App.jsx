@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FLOATING_SIDBAR_POSITIONS } from './helpers/enum';
 
 import { Outlet } from 'react-router-dom';
@@ -6,11 +6,16 @@ import useIsMobile from './hooks/useIsMobile';
 import MobileMessage from './components/Layout/MobileMessage';
 import Sidebar from './components/layout/Sidebar/Sidebar';
 import FloatingSideBar from './components/layout/Sidebar/FloatingSidebar';
+import { dbManager } from './services/IndexedDBManager';
 
 function App() {
   const [hoveredItem, setHoveredItem] = useState(null);
   const [sideBarOpen, setSideBarOpen] = useState(false);
   const isMobile = useIsMobile();
+
+  useEffect(() => {
+    dbManager.init().catch(console.error);
+  }, []);
 
   return (
     <>

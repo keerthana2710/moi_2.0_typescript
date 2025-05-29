@@ -8,26 +8,7 @@ import useAuth from '../../context/useAuth';
 import axiosInstance from '@/utils/AxiosInstance';
 import useDebounce from '@/hooks/useDebounce';
 import { BillPreview } from './components/BillPreview';
-
-const cities = [
-  'சென்னை',
-  'மும்பை',
-  'டெல்லி',
-  'பெங்களூரு',
-  'ஹைதராபாத்',
-  'கொல்கத்தா',
-];
-
-const occupations = [
-  'மருத்துவர்',
-  'பொறியாளர்',
-  'ஆசிரியர்',
-  'வணிகர்',
-  'அரசு ஊழியர்',
-  'தனியார் ஊழியர்',
-  'விவசாயி',
-  'மற்றவை',
-];
+import { useUniqueCities, useUniqueWorkTypes } from '@/hooks/useUniqueValue';
 
 function FunctionBillDetails() {
   const formRefs = useRef([]);
@@ -35,6 +16,9 @@ function FunctionBillDetails() {
   const queryClient = useQueryClient();
   const [errors, setErrors] = useState({});
   const [showPreview, setShowPreview] = useState(true);
+
+  const cities = useUniqueCities();
+  const occupations = useUniqueWorkTypes();
 
   // State for selected function
   const [selectedFunction, setSelectedFunction] = useState(null);
