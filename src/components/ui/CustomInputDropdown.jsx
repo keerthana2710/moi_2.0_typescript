@@ -11,6 +11,7 @@ export const CustomDropdownInput = forwardRef(
       value = '',
       required = true,
       name,
+      disabled = false,
     },
     ref
   ) => {
@@ -198,6 +199,7 @@ export const CustomDropdownInput = forwardRef(
             className='pl-4 pr-10 rounded-md h-10 border w-full focus:outline-none focus:ring-2 focus:ring-darkBlue'
             ref={inputRef}
             autoComplete='off'
+            disabled={disabled}
           />
           <button
             type='button'

@@ -38,7 +38,7 @@ function FunctionsListingPage() {
       });
 
       if (response.status === 200) {
-        setTotalPage(response?.data?.pagination?.total);
+        setTotalPage(response?.data?.pagination?.pages);
         return response.data;
       }
     } catch (err) {

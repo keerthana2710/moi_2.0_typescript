@@ -10,6 +10,7 @@ import axiosInstance from '@/utils/AxiosInstance';
 const saveAuth = (user) => {
   setItem('access-token', JSON.stringify(user.token));
   setItem('user', JSON.stringify(user));
+  setItem('isAdmin', JSON.stringify(user.isAdmin));
 };
 
 const loginRequest = async (form) => {
@@ -22,7 +23,7 @@ const loginRequest = async (form) => {
 export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
-  const { setToken } = useAuth();
+  const { setToken, setIsAdmin } = useAuth();
   const [showPwd, setShowPwd] = useState(false);
   const navigate = useNavigate();
 
@@ -31,6 +32,7 @@ export default function Login() {
     onSuccess: ({ ...user }) => {
       saveAuth(user);
       setToken(user.token);
+      setIsAdmin(user.isAdmin);
       toast.success('Logged in Successfully');
       navigate('/');
     },

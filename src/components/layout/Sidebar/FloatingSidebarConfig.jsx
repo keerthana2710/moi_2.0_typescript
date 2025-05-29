@@ -5,7 +5,10 @@ export const SIDEBAR_CONFIG = {
     extension_data: [
       {
         sub_heading: 'Quick Links',
-        data: [{ title: 'Create Function', link: '/create_functions' }],
+        data: [
+          { title: 'Create Function', link: '/create_functions' },
+          { title: 'Add Function Bill', link: '/add_function_bill' },
+        ],
       },
     ],
   },
@@ -15,7 +18,10 @@ export const SIDEBAR_CONFIG = {
     extension_data: [
       {
         sub_heading: 'Quick Links',
-        data: [{ title: 'Functions Bin', link: '/bin/functions_bin' }],
+        data: [
+          { title: 'Functions Bin', link: '/bin/functions_bin' },
+          { title: 'Payers Bin', link: '/bin/payers_bin' },
+        ],
       },
     ],
   },
