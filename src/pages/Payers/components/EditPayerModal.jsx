@@ -183,6 +183,12 @@ const EditModal = ({ isOpen, onClose, initialData = {} }) => {
         queryKey: ['payers', initialData?.function_id],
         exact: true,
       });
+
+      queryClient.invalidateQueries({
+        queryKey: ['editLogs'],
+        exact: true,
+      });
+
       onClose();
       toast.success('Payer updated successfully!');
     },
@@ -258,7 +264,6 @@ const EditModal = ({ isOpen, onClose, initialData = {} }) => {
 
   // Handle payment type change
   const handlePaymentTypeChange = (type) => {
-    handleFieldInteraction();
     setPaymentType(type);
     handleInputChange('payer_given_object', type);
 
@@ -287,11 +292,6 @@ const EditModal = ({ isOpen, onClose, initialData = {} }) => {
   };
 
   // Lock the edit reason once user starts editing other fields
-  const handleFieldInteraction = () => {
-    if (editReason.trim() && !isReasonLocked) {
-      setIsReasonLocked(true);
-    }
-  };
 
   // Handle form submission
   const handleSubmit = () => {
@@ -385,17 +385,6 @@ const EditModal = ({ isOpen, onClose, initialData = {} }) => {
                 {errors.editReason}
               </span>
             )}
-            {isReasonLocked && (
-              <p className='text-xs text-gray-600 mt-1'>
-                ℹ️ Edit reason has been locked and cannot be changed.
-              </p>
-            )}
-            {!isReasonLocked && editReason.trim() && (
-              <p className='text-xs text-yellow-700 mt-1'>
-                ⚠️ Once you start editing other fields, this reason cannot be
-                changed.
-              </p>
-            )}
             {/* Show changed fields indicator */}
             {hasChanges && (
               <div className='mt-2 p-2 bg-green-50 border border-green-200 rounded'>
@@ -419,11 +408,9 @@ const EditModal = ({ isOpen, onClose, initialData = {} }) => {
                 placeholder='செலுத்துபவர் பெயர்'
                 value={formData.payer_name}
                 onChange={(e) => {
-                  handleFieldInteraction();
                   handleInputChange('payer_name', e.target.value);
                 }}
                 disabled={updateMutation.isPending || isFormDisabled}
-                onFocus={handleFieldInteraction}
               />
               {errors.payer_name && (
                 <span className='text-red-500 text-xs'>
@@ -443,11 +430,9 @@ const EditModal = ({ isOpen, onClose, initialData = {} }) => {
                 placeholder='கைபேசி எண்'
                 value={formData.payer_phno}
                 onChange={(e) => {
-                  handleFieldInteraction();
                   handleInputChange('payer_phno', e.target.value);
                 }}
                 disabled={updateMutation.isPending || isFormDisabled}
-                onFocus={handleFieldInteraction}
               />
               {errors.payer_phno && (
                 <span className='text-red-500 text-xs'>
@@ -463,7 +448,6 @@ const EditModal = ({ isOpen, onClose, initialData = {} }) => {
                 options={occupations}
                 value={formData.payer_work}
                 onChange={(value) => {
-                  handleFieldInteraction();
                   handleInputChange('payer_work', value);
                 }}
                 error={errors.payer_work}
@@ -478,7 +462,6 @@ const EditModal = ({ isOpen, onClose, initialData = {} }) => {
                 options={relations}
                 value={formData.payer_relation}
                 onChange={(value) => {
-                  handleFieldInteraction();
                   handleInputChange('payer_relation', value);
                 }}
                 error={errors.payer_relation}
@@ -530,7 +513,6 @@ const EditModal = ({ isOpen, onClose, initialData = {} }) => {
                     options={paymentMethods}
                     value={formData.payer_cash_method}
                     onChange={(value) => {
-                      handleFieldInteraction();
                       handleInputChange('payer_cash_method', value);
                     }}
                     error={errors.payer_cash_method}
@@ -549,11 +531,9 @@ const EditModal = ({ isOpen, onClose, initialData = {} }) => {
                     placeholder='தொகை'
                     value={formData.payer_amount}
                     onChange={(e) => {
-                      handleFieldInteraction();
                       handleInputChange('payer_amount', e.target.value);
                     }}
                     disabled={updateMutation.isPending || isFormDisabled}
-                    onFocus={handleFieldInteraction}
                     min='0'
                     step='0.01'
                   />
@@ -575,11 +555,9 @@ const EditModal = ({ isOpen, onClose, initialData = {} }) => {
                   placeholder='பரிசு பெயர்'
                   value={formData.payer_gift_name}
                   onChange={(e) => {
-                    handleFieldInteraction();
                     handleInputChange('payer_gift_name', e.target.value);
                   }}
                   disabled={updateMutation.isPending || isFormDisabled}
-                  onFocus={handleFieldInteraction}
                 />
                 {errors.payer_gift_name && (
                   <span className='text-red-500 text-xs'>
@@ -596,7 +574,6 @@ const EditModal = ({ isOpen, onClose, initialData = {} }) => {
                 options={cities}
                 value={formData.payer_city}
                 onChange={(value) => {
-                  handleFieldInteraction();
                   handleInputChange('payer_city', value);
                 }}
                 error={errors.payer_city}
@@ -615,11 +592,9 @@ const EditModal = ({ isOpen, onClose, initialData = {} }) => {
                 placeholder='முகவரி'
                 value={formData.payer_address}
                 onChange={(e) => {
-                  handleFieldInteraction();
                   handleInputChange('payer_address', e.target.value);
                 }}
                 disabled={updateMutation.isPending || isFormDisabled}
-                onFocus={handleFieldInteraction}
               />
               {errors.payer_address && (
                 <span className='text-red-500 text-xs'>

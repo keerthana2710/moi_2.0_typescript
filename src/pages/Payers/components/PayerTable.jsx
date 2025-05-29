@@ -1,6 +1,7 @@
 import { BsThreeDotsVertical } from 'react-icons/bs';
 import { MdOutlineModeEdit, MdRestore } from 'react-icons/md';
 import { RxCrossCircled } from 'react-icons/rx';
+import { FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
 
 import { useEffect, useRef, useState } from 'react';
 import ActionOptions from '@/components/ui/ActionOptions';
@@ -29,22 +30,100 @@ function PayersTable({
     id: null,
     data: {},
   });
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
+  const [sortedData, setSortedData] = useState([]);
+
   const actionRefs = useRef([]);
   const queryClient = useQueryClient();
   const { token } = useAuth();
 
   const headers = [
     { key: 'payer_name', label: 'செலுத்துபவர் பெயர்' },
-    { key: 'payer_phno', label: 'கைபேசி எண்' },
-    { key: 'payer_work', label: 'தொழில்' },
-    { key: 'payer_given_object', label: 'வழங்கிய பொருள்' },
     { key: 'payer_amount', label: 'தொகை' },
-    { key: 'payer_gift_name', label: 'பரிசு பெயர்' },
-    { key: 'payer_cash_method', label: 'செலுத்தும் முறை' },
     { key: 'payer_relation', label: 'உறவு முறை' },
+    { key: 'payer_given_object', label: 'வழங்கிய பொருள்' },
+    { key: 'payer_gift_name', label: 'பரிசு பெயர்' },
+    { key: 'payer_phno', label: 'கைபேசி எண்' },
     { key: 'payer_city', label: 'ஊர்' },
+    { key: 'payer_work', label: 'தொழில்' },
+    { key: 'payer_cash_method', label: 'செலுத்தும் முறை' },
     { key: 'payer_address', label: 'முகவரி' },
   ];
+
+  // Sort data whenever data or sortConfig changes
+  useEffect(() => {
+    if (!data || data.length === 0) {
+      setSortedData([]);
+      return;
+    }
+
+    let sortableData = [...data];
+
+    if (sortConfig.key && sortConfig.direction) {
+      sortableData.sort((a, b) => {
+        const aValue = a[sortConfig.key] || '';
+        const bValue = b[sortConfig.key] || '';
+
+        // Handle numeric sorting for amount
+        if (sortConfig.key === 'payer_amount') {
+          const aNum = parseFloat(aValue) || 0;
+          const bNum = parseFloat(bValue) || 0;
+          return sortConfig.direction === 'asc' ? aNum - bNum : bNum - aNum;
+        }
+
+        // Handle phone number sorting (numeric)
+        if (sortConfig.key === 'payer_phno') {
+          const aNum = parseInt(aValue) || 0;
+          const bNum = parseInt(bValue) || 0;
+          return sortConfig.direction === 'asc' ? aNum - bNum : bNum - aNum;
+        }
+
+        // Handle string sorting
+        const aStr = aValue.toString().toLowerCase();
+        const bStr = bValue.toString().toLowerCase();
+
+        if (aStr < bStr) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aStr > bStr) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+
+    setSortedData(sortableData);
+  }, [data, sortConfig]);
+
+  const handleSort = (key) => {
+    let direction = 'asc';
+
+    if (sortConfig.key === key) {
+      if (sortConfig.direction === 'asc') {
+        direction = 'desc';
+      } else if (sortConfig.direction === 'desc') {
+        direction = null;
+      } else {
+        direction = 'asc';
+      }
+    }
+
+    setSortConfig({ key: direction ? key : null, direction });
+  };
+
+  const getSortIcon = (columnKey) => {
+    if (sortConfig.key !== columnKey) {
+      return <FaSort className='ml-1 text-gray-400' size={12} />;
+    }
+
+    if (sortConfig.direction === 'asc') {
+      return <FaSortUp className='ml-1 text-blue-600' size={12} />;
+    } else if (sortConfig.direction === 'desc') {
+      return <FaSortDown className='ml-1 text-blue-600' size={12} />;
+    }
+
+    return <FaSort className='ml-1 text-gray-400' size={12} />;
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -70,7 +149,6 @@ function PayersTable({
     },
     onSuccess: () => {
       toast.success('Payer deleted successfully');
-      console.log(page, pageFetch, debouncedSearchQuery, selectedFunctionId);
       queryClient.invalidateQueries({
         queryKey: ['payers', selectedFunctionId],
         exact: true,
@@ -140,7 +218,7 @@ function PayersTable({
   };
 
   const handleEdit = (id) => {
-    const itemData = data.find((item) => item._id === id) || {};
+    const itemData = sortedData.find((item) => item._id === id) || {};
     setEditModal({ open: true, id, data: itemData });
     setOpenActionIdx(null);
   };
@@ -214,7 +292,7 @@ function PayersTable({
         </tr>
       ));
     } else {
-      return data.map((entry, idx) => (
+      return sortedData.map((entry, idx) => (
         <tr
           key={entry._id}
           className='cursor-pointer hover:bg-blue-100 text-sm text-gray-800 transition-colors border-b border-gray-200'
@@ -267,8 +345,15 @@ function PayersTable({
           <thead className='bg-lightBlue'>
             <tr className='text-left text-gray-700 font-extrabold text-sm'>
               {headers.map((h) => (
-                <th key={h.key} className='px-4 py-3 whitespace-nowrap'>
-                  {h.label}
+                <th
+                  key={h.key}
+                  className='px-4 py-3 whitespace-nowrap cursor-pointer hover:bg-blue-200 transition-colors'
+                  onClick={() => handleSort(h.key)}
+                >
+                  <div className='flex items-center justify-between'>
+                    <span>{h.label}</span>
+                    {getSortIcon(h.key)}
+                  </div>
                 </th>
               ))}
               <th className='sticky right-0 px-4 py-3 text-right bg-lightBlue'>

@@ -145,7 +145,6 @@ const EditFunctionModal = ({ isOpen, onClose, initialData = {} }) => {
 
   // State for edit reason
   const [editReason, setEditReason] = useState('');
-  const [isReasonLocked, setIsReasonLocked] = useState(false);
 
   // State to track original values for comparison
   const [originalFormData, setOriginalFormData] = useState({});
@@ -196,7 +195,6 @@ const EditFunctionModal = ({ isOpen, onClose, initialData = {} }) => {
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    console.log('Initial Data:', initialData);
     if (isOpen && initialData && Object.keys(initialData).length > 0) {
       const formattedData = {
         function_name: initialData.function_name || '',
@@ -222,7 +220,6 @@ const EditFunctionModal = ({ isOpen, onClose, initialData = {} }) => {
       setErrors({});
       // Reset edit reason state when modal opens
       setEditReason('');
-      setIsReasonLocked(false);
     }
   }, [isOpen, initialData]);
 
@@ -399,11 +396,6 @@ const EditFunctionModal = ({ isOpen, onClose, initialData = {} }) => {
   };
 
   // Lock the edit reason once user starts editing other fields
-  const handleFieldInteraction = () => {
-    if (editReason.trim() && !isReasonLocked) {
-      setIsReasonLocked(true);
-    }
-  };
 
   // Handle form submission
   const handleSubmit = () => {
@@ -477,31 +469,17 @@ const EditFunctionModal = ({ isOpen, onClose, initialData = {} }) => {
             <textarea
               value={editReason}
               onChange={handleEditReasonChange}
-              disabled={isReasonLocked}
               placeholder='Please provide a reason for editing this function record...'
-              className={`w-full border rounded p-3 focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 outline-none resize-none h-20 ${
+              className={`w-full border rounded p-3 bg-white focus:ring-1 focus:ring-yellow-500 outline-none resize-none h-20 ${
                 errors.editReason
                   ? 'border-red-500 bg-red-50'
                   : 'border-yellow-300'
-              } ${
-                isReasonLocked ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
               }`}
             />
             {errors.editReason && (
               <span className='text-red-500 text-xs mt-1'>
                 {errors.editReason}
               </span>
-            )}
-            {isReasonLocked && (
-              <p className='text-xs text-gray-600 mt-1'>
-                ℹ️ Edit reason has been locked and cannot be changed.
-              </p>
-            )}
-            {!isReasonLocked && editReason.trim() && (
-              <p className='text-xs text-yellow-700 mt-1'>
-                ⚠️ Once you start editing other fields, this reason cannot be
-                changed.
-              </p>
             )}
             {/* Show changed fields indicator */}
             {hasChanges && (
@@ -522,7 +500,6 @@ const EditFunctionModal = ({ isOpen, onClose, initialData = {} }) => {
                 options={functionTypes}
                 value={formData.function_name}
                 onChange={(value) => {
-                  handleFieldInteraction();
                   handleInputChange('function_name', value);
                 }}
                 error={errors.function_name}
@@ -541,11 +518,9 @@ const EditFunctionModal = ({ isOpen, onClose, initialData = {} }) => {
                 placeholder='நடத்துபவர் பெயர்'
                 value={formData.function_owner_name}
                 onChange={(e) => {
-                  handleFieldInteraction();
                   handleInputChange('function_owner_name', e.target.value);
                 }}
                 disabled={updateMutation.isPending || isFormDisabled}
-                onFocus={handleFieldInteraction}
               />
               {errors.function_owner_name && (
                 <span className='text-red-500 text-xs'>
@@ -561,7 +536,6 @@ const EditFunctionModal = ({ isOpen, onClose, initialData = {} }) => {
                 options={cities}
                 value={formData.function_owner_city}
                 onChange={(value) => {
-                  handleFieldInteraction();
                   handleInputChange('function_owner_city', value);
                 }}
                 error={errors.function_owner_city}
@@ -579,11 +553,9 @@ const EditFunctionModal = ({ isOpen, onClose, initialData = {} }) => {
                 placeholder='முகவரி'
                 value={formData.function_owner_address}
                 onChange={(e) => {
-                  handleFieldInteraction();
                   handleInputChange('function_owner_address', e.target.value);
                 }}
                 disabled={updateMutation.isPending || isFormDisabled}
-                onFocus={handleFieldInteraction}
                 rows={3}
               />
               {errors.function_owner_address && (
@@ -605,11 +577,9 @@ const EditFunctionModal = ({ isOpen, onClose, initialData = {} }) => {
                 placeholder='கைபேசி எண்'
                 value={formData.function_owner_phno}
                 onChange={(e) => {
-                  handleFieldInteraction();
                   handleInputChange('function_owner_phno', e.target.value);
                 }}
                 disabled={updateMutation.isPending || isFormDisabled}
-                onFocus={handleFieldInteraction}
               />
               {errors.function_owner_phno && (
                 <span className='text-red-500 text-xs'>
@@ -629,11 +599,9 @@ const EditFunctionModal = ({ isOpen, onClose, initialData = {} }) => {
                 placeholder='செலவு தொகை'
                 value={formData.function_amt_spent}
                 onChange={(e) => {
-                  handleFieldInteraction();
                   handleInputChange('function_amt_spent', e.target.value);
                 }}
                 disabled={updateMutation.isPending || isFormDisabled}
-                onFocus={handleFieldInteraction}
                 min='0'
                 step='0.01'
               />
@@ -655,11 +623,9 @@ const EditFunctionModal = ({ isOpen, onClose, initialData = {} }) => {
                 placeholder='நாயகன் பெயர்'
                 value={formData.function_hero_name}
                 onChange={(e) => {
-                  handleFieldInteraction();
                   handleInputChange('function_hero_name', e.target.value);
                 }}
                 disabled={updateMutation.isPending || isFormDisabled}
-                onFocus={handleFieldInteraction}
               />
               {errors.function_hero_name && (
                 <span className='text-red-500 text-xs'>
@@ -679,11 +645,9 @@ const EditFunctionModal = ({ isOpen, onClose, initialData = {} }) => {
                 placeholder='நாயகி பெயர்'
                 value={formData.function_heroine_name}
                 onChange={(e) => {
-                  handleFieldInteraction();
                   handleInputChange('function_heroine_name', e.target.value);
                 }}
                 disabled={updateMutation.isPending || isFormDisabled}
-                onFocus={handleFieldInteraction}
               />
               {errors.function_heroine_name && (
                 <span className='text-red-500 text-xs'>
@@ -703,11 +667,9 @@ const EditFunctionModal = ({ isOpen, onClose, initialData = {} }) => {
                 placeholder='விழா நடைபெறும் இடம்'
                 value={formData.function_held_place}
                 onChange={(e) => {
-                  handleFieldInteraction();
                   handleInputChange('function_held_place', e.target.value);
                 }}
                 disabled={updateMutation.isPending || isFormDisabled}
-                onFocus={handleFieldInteraction}
               />
               {errors.function_held_place && (
                 <span className='text-red-500 text-xs'>
@@ -723,7 +685,6 @@ const EditFunctionModal = ({ isOpen, onClose, initialData = {} }) => {
                 options={cities}
                 value={formData.function_held_city}
                 onChange={(value) => {
-                  handleFieldInteraction();
                   handleInputChange('function_held_city', value);
                 }}
                 error={errors.function_held_city}
@@ -737,7 +698,6 @@ const EditFunctionModal = ({ isOpen, onClose, initialData = {} }) => {
                 label='விழா தொடங்கும் தேதி'
                 value={formData.function_start_date}
                 onChange={(value) => {
-                  handleFieldInteraction();
                   handleInputChange('function_start_date', value);
                 }}
                 error={errors.function_start_date}
@@ -751,7 +711,6 @@ const EditFunctionModal = ({ isOpen, onClose, initialData = {} }) => {
                 label='விழா ஆரம்ப நேரம்'
                 value={formData.function_start_time}
                 onChange={(value) => {
-                  handleFieldInteraction();
                   handleInputChange('function_start_time', value);
                 }}
                 error={errors.function_start_time}
@@ -765,7 +724,6 @@ const EditFunctionModal = ({ isOpen, onClose, initialData = {} }) => {
                 label='விழா முடியும் தேதி'
                 value={formData.function_end_date}
                 onChange={(value) => {
-                  handleFieldInteraction();
                   handleInputChange('function_end_date', value);
                 }}
                 error={errors.function_end_date}
@@ -779,7 +737,6 @@ const EditFunctionModal = ({ isOpen, onClose, initialData = {} }) => {
                 label='விழா முடியும் நேரம்'
                 value={formData.function_end_time}
                 onChange={(value) => {
-                  handleFieldInteraction();
                   handleInputChange('function_end_time', value);
                 }}
                 error={errors.function_end_time}

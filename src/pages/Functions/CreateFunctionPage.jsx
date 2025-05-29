@@ -28,14 +28,22 @@ const functionTypes = [
   'மற்றவை',
 ];
 
-const occupations = ['Doctor', 'Engineer', 'Teacher', 'Business', 'Other'];
-
 function CreateFunctionPage() {
   const formRefs = useRef([]);
   const navigate = useNavigate();
   const { token } = useAuth();
   const queryClient = useQueryClient();
   const [errors, setErrors] = useState({});
+
+  // Initialize with current date and time
+  const now = new Date();
+  const currentDate = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate()
+  );
+  const currentTime = new Date();
+
   const [formData, setFormData] = useState({
     function_name: '',
     function_owner_name: '',
@@ -47,18 +55,11 @@ function CreateFunctionPage() {
     function_heroine_name: '',
     function_held_place: '',
     function_held_city: '',
-    function_start_date: null,
-    function_start_time: null,
-    function_end_date: null,
-    function_end_time: null,
+    function_start_date: currentDate,
+    function_start_time: currentTime,
+    function_end_date: currentDate,
+    function_end_time: currentTime,
     function_total_days: '1',
-    function_bill_details: {
-      owner_name: '',
-      wife_name: '',
-      wife_occupation: '',
-      function_place: '',
-      function_city: '',
-    },
   });
 
   // Calculate total days when start or end date changes
@@ -72,7 +73,7 @@ function CreateFunctionPage() {
       endDate.setHours(0, 0, 0, 0);
 
       const timeDiff = endDate.getTime() - startDate.getTime();
-      const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1; // +1 to include both start and end date
+      const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
 
       setFormData((prev) => ({
         ...prev,
@@ -90,11 +91,8 @@ function CreateFunctionPage() {
       { key: 'function_name', label: 'விழாபெயர்' },
       { key: 'function_owner_name', label: 'நடத்துபவர்' },
       { key: 'function_owner_city', label: 'நடத்துபவர் ஊர்' },
-      { key: 'function_owner_address', label: 'நடத்துபவர் முகவரி' },
       { key: 'function_owner_phno', label: 'நடத்துபவர் கைபேசி எண்' },
       { key: 'function_amt_spent', label: 'மொத்த செலவு' },
-      { key: 'function_hero_name', label: 'விழா நாயகன்' },
-      { key: 'function_heroine_name', label: 'விழா நாயகி' },
       { key: 'function_held_place', label: 'விழா நடைபெறும் இடம்' },
       { key: 'function_held_city', label: 'விழா இடம்' },
       { key: 'function_start_date', label: 'விழா தொடங்கும் தேதி' },
@@ -103,36 +101,9 @@ function CreateFunctionPage() {
       { key: 'function_end_time', label: 'விழா முடியும் நேரம்' },
     ];
 
-    // Bill details required fields
-    const billDetailsFields = [
-      { key: 'function_bill_details.owner_name', label: 'Owner Name' },
-      { key: 'function_bill_details.wife_name', label: 'Wife/Spouse Name' },
-      {
-        key: 'function_bill_details.wife_occupation',
-        label: 'Spouse Occupation',
-      },
-      {
-        key: 'function_bill_details.function_place',
-        label: 'Function Place (Bill)',
-      },
-      {
-        key: 'function_bill_details.function_city',
-        label: 'Function City (Bill)',
-      },
-    ];
-
     // Check required fields
     requiredFields.forEach((field) => {
       const value = formData[field.key];
-      if (!value || (typeof value === 'string' && value.trim() === '')) {
-        newErrors[field.key] = `${field.label} is required`;
-      }
-    });
-
-    // Check bill details fields
-    billDetailsFields.forEach((field) => {
-      const [parent, child] = field.key.split('.');
-      const value = formData[parent][child];
       if (!value || (typeof value === 'string' && value.trim() === '')) {
         newErrors[field.key] = `${field.label} is required`;
       }
@@ -181,21 +152,10 @@ function CreateFunctionPage() {
       });
     }
 
-    if (name.includes('.')) {
-      const [parentKey, childKey] = name.split('.');
-      setFormData({
-        ...formData,
-        [parentKey]: {
-          ...formData[parentKey],
-          [childKey]: value,
-        },
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [name]: value,
-      });
-    }
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
   };
 
   // Handle date selection
@@ -283,28 +243,23 @@ function CreateFunctionPage() {
     }
   };
 
-  // Helper function to get field index for focusing
+  // Helper function to get field index for focusing - Updated order
   const getFieldIndex = (fieldName) => {
     const fieldIndexMap = {
       function_name: 0,
-      function_owner_name: 1,
-      function_owner_city: 2,
-      function_owner_address: 3,
-      function_owner_phno: 4,
-      function_amt_spent: 5,
-      function_hero_name: 6,
-      function_heroine_name: 7,
-      function_held_place: 8,
-      function_held_city: 9,
-      function_start_date: 10,
-      function_start_time: 11,
-      function_end_date: 12,
-      function_end_time: 13,
-      'function_bill_details.owner_name': 14,
-      'function_bill_details.wife_name': 15,
-      'function_bill_details.wife_occupation': 16,
-      'function_bill_details.function_place': 17,
-      'function_bill_details.function_city': 18,
+      function_held_city: 1,
+      function_start_date: 2,
+      function_start_time: 3,
+      function_end_date: 4,
+      function_end_time: 5,
+      function_owner_name: 6,
+      function_owner_phno: 7,
+      function_hero_name: 8,
+      function_heroine_name: 9,
+      function_amt_spent: 10,
+      function_owner_city: 11,
+      function_owner_address: 12,
+      function_held_place: 13,
     };
     return fieldIndexMap[fieldName] || -1;
   };
@@ -319,27 +274,14 @@ function CreateFunctionPage() {
   };
 
   return (
-    <div className='flex flex-col gap-6 px-4 pb-10'>
+    <div className='flex flex-col gap-6 px-4 pb-10 bg-white p-6 rounded-lg shadow-md'>
       {/* Page Header */}
-      <div className='flex justify-between items-center py-4'>
-        <h1 className='text-2xl font-bold'>விழாவின் விவரங்கள்</h1>
-        <button
-          className='bg-darkBlue flex gap-2 items-center p-2 hover:scale-105 transition-all text-white px-4 py-2 rounded shadow'
-          onClick={handleSubmit}
-        >
-          Save <FaSave />
-        </button>
+      <div className='flex  items-center py-4'>
+        <h1 className='text-2xl font-bold text-darkBlue'>விழாவின் விவரங்கள்</h1>
       </div>
 
-      <div className='bg-white p-6 rounded-lg shadow-md grid grid-cols-1 md:grid-cols-2 gap-6'>
-        {/* Function Details */}
-        <div className='col-span-2'>
-          <h2 className='text-xl font-semibold mb-4 text-darkBlue'>
-            Function Details
-          </h2>
-        </div>
-
-        {/* Function Type - Dropdown - Index 0 */}
+      <div className=' grid grid-cols-1 md:grid-cols-2 gap-6'>
+        {/* 1. விழாபெயர் - Function Type - Dropdown - Index 0 */}
         <div className='flex flex-col gap-2'>
           <CustomDropdownInput
             label='விழாபெயர்'
@@ -357,192 +299,7 @@ function CreateFunctionPage() {
           )}
         </div>
 
-        {/* Function Owner Name - Index 1 */}
-        <div className='flex flex-col gap-2'>
-          <label className='text-md font-semibold'>
-            <span className='text-red-500 mr-1'>*</span>நடத்துபவர்
-          </label>
-          <input
-            type='text'
-            className={getInputClassName('function_owner_name')}
-            placeholder='நடத்துபவர் பெயர்'
-            value={formData.function_owner_name}
-            onChange={(e) =>
-              handleInputChange('function_owner_name', e.target.value)
-            }
-            onKeyDown={(e) => handleKeyDown(e, 1)}
-            ref={(el) => (formRefs.current[1] = el)}
-          />
-          {errors.function_owner_name && (
-            <span className='text-red-500 text-sm'>
-              {errors.function_owner_name}
-            </span>
-          )}
-        </div>
-
-        {/* City - Dropdown - Index 2 */}
-        <div className='flex flex-col gap-2'>
-          <CustomDropdownInput
-            label='நடத்துபவர் ஊர்'
-            placeholder='நடத்துபவர் ஊர்'
-            options={cities}
-            value={formData.function_owner_city}
-            onChange={(value) =>
-              handleInputChange('function_owner_city', value)
-            }
-            onKeyDown={(e) => handleKeyDown(e, 2)}
-            ref={(el) => (formRefs.current[2] = el)}
-            name='function_owner_city'
-            className={
-              errors.function_owner_city ? 'border-red-500 bg-red-50' : ''
-            }
-          />
-          {errors.function_owner_city && (
-            <span className='text-red-500 text-sm'>
-              {errors.function_owner_city}
-            </span>
-          )}
-        </div>
-
-        {/* Address - Index 3 */}
-        <div className='flex flex-col gap-2'>
-          <label className='text-md font-semibold'>
-            <span className='text-red-500 mr-1'>*</span>நடத்துபவர் முகவரி
-          </label>
-          <input
-            type='text'
-            className={getInputClassName('function_owner_address')}
-            placeholder='நடத்துபவர் முகவரி'
-            value={formData.function_owner_address}
-            onChange={(e) =>
-              handleInputChange('function_owner_address', e.target.value)
-            }
-            onKeyDown={(e) => handleKeyDown(e, 3)}
-            ref={(el) => (formRefs.current[3] = el)}
-          />
-          {errors.function_owner_address && (
-            <span className='text-red-500 text-sm'>
-              {errors.function_owner_address}
-            </span>
-          )}
-        </div>
-
-        {/* Phone Number - Index 4 */}
-        <div className='flex flex-col gap-2'>
-          <label className='text-md font-semibold'>
-            <span className='text-red-500 mr-1'>*</span>நடத்துபவர் கைபேசி எண்
-          </label>
-          <input
-            type='text'
-            className={getInputClassName('function_owner_phno')}
-            placeholder='நடத்துபவர் கைபேசி எண்'
-            value={formData.function_owner_phno}
-            onChange={(e) =>
-              handleInputChange('function_owner_phno', e.target.value)
-            }
-            onKeyDown={(e) => handleKeyDown(e, 4)}
-            ref={(el) => (formRefs.current[4] = el)}
-          />
-          {errors.function_owner_phno && (
-            <span className='text-red-500 text-sm'>
-              {errors.function_owner_phno}
-            </span>
-          )}
-        </div>
-
-        {/* Amount Spent - Index 5 */}
-        <div className='flex flex-col gap-2'>
-          <label className='text-md font-semibold'>
-            <span className='text-red-500 mr-1'>*</span>மொத்த செலவு
-          </label>
-          <input
-            type='number'
-            className={getInputClassName('function_amt_spent')}
-            placeholder='மொத்த செலவு'
-            value={formData.function_amt_spent}
-            onChange={(e) =>
-              handleInputChange('function_amt_spent', e.target.value)
-            }
-            onKeyDown={(e) => handleKeyDown(e, 5)}
-            ref={(el) => (formRefs.current[5] = el)}
-          />
-          {errors.function_amt_spent && (
-            <span className='text-red-500 text-sm'>
-              {errors.function_amt_spent}
-            </span>
-          )}
-        </div>
-
-        {/* Groom Name - Index 6 */}
-        <div className='flex flex-col gap-2'>
-          <label className='text-md font-semibold'>
-            <span className='text-red-500 mr-1'>*</span>விழா நாயகன்
-          </label>
-          <input
-            type='text'
-            className={getInputClassName('function_hero_name')}
-            placeholder='விழா நாயகன்'
-            value={formData.function_hero_name}
-            onChange={(e) =>
-              handleInputChange('function_hero_name', e.target.value)
-            }
-            onKeyDown={(e) => handleKeyDown(e, 6)}
-            ref={(el) => (formRefs.current[6] = el)}
-          />
-          {errors.function_hero_name && (
-            <span className='text-red-500 text-sm'>
-              {errors.function_hero_name}
-            </span>
-          )}
-        </div>
-
-        {/* Bride Name - Index 7 */}
-        <div className='flex flex-col gap-2'>
-          <label className='text-md font-semibold'>
-            <span className='text-red-500 mr-1'>*</span>விழா நாயகி
-          </label>
-          <input
-            type='text'
-            className={getInputClassName('function_heroine_name')}
-            placeholder='விழா நாயகி'
-            value={formData.function_heroine_name}
-            onChange={(e) =>
-              handleInputChange('function_heroine_name', e.target.value)
-            }
-            onKeyDown={(e) => handleKeyDown(e, 7)}
-            ref={(el) => (formRefs.current[7] = el)}
-          />
-          {errors.function_heroine_name && (
-            <span className='text-red-500 text-sm'>
-              {errors.function_heroine_name}
-            </span>
-          )}
-        </div>
-
-        {/* Function Place - Index 8 */}
-        <div className='flex flex-col gap-2'>
-          <label className='text-md font-semibold'>
-            <span className='text-red-500 mr-1'>*</span>விழா நடைபெறும் இடம்
-          </label>
-          <input
-            type='text'
-            className={getInputClassName('function_held_place')}
-            placeholder='விழா நடைபெறும் இடம்'
-            value={formData.function_held_place}
-            onChange={(e) =>
-              handleInputChange('function_held_place', e.target.value)
-            }
-            onKeyDown={(e) => handleKeyDown(e, 8)}
-            ref={(el) => (formRefs.current[8] = el)}
-          />
-          {errors.function_held_place && (
-            <span className='text-red-500 text-sm'>
-              {errors.function_held_place}
-            </span>
-          )}
-        </div>
-
-        {/* Function City - Dropdown - Index 9 */}
+        {/* 2. விழா இடம் - Function City - Dropdown - Index 1 */}
         <div className='flex flex-col gap-2'>
           <CustomDropdownInput
             label='விழா இடம்'
@@ -550,8 +307,8 @@ function CreateFunctionPage() {
             options={cities}
             value={formData.function_held_city}
             onChange={(value) => handleInputChange('function_held_city', value)}
-            onKeyDown={(e) => handleKeyDown(e, 9)}
-            ref={(el) => (formRefs.current[9] = el)}
+            onKeyDown={(e) => handleKeyDown(e, 1)}
+            ref={(el) => (formRefs.current[1] = el)}
             name='function_held_city'
             className={
               errors.function_held_city ? 'border-red-500 bg-red-50' : ''
@@ -564,7 +321,7 @@ function CreateFunctionPage() {
           )}
         </div>
 
-        {/* Start Date - Using new Custom Date Picker - Index 10 */}
+        {/* 3. விழா தொடங்கும் தேதி - Start Date - Index 2 */}
         <div className='flex flex-col gap-2'>
           <CustomDatePickerInput
             label='விழா தொடங்கும் தேதி'
@@ -572,8 +329,8 @@ function CreateFunctionPage() {
             onChange={(date) => handleDateChange(date, 'function_start_date')}
             dateFormat='MM/dd/yyyy'
             placeholderText='Select start date'
-            onKeyDown={(e) => handleKeyDown(e, 10)}
-            ref={(el) => (formRefs.current[10] = el)}
+            onKeyDown={(e) => handleKeyDown(e, 2)}
+            ref={(el) => (formRefs.current[2] = el)}
             name='function_start_date'
             className={
               errors.function_start_date ? 'border-red-500 bg-red-50' : ''
@@ -586,7 +343,7 @@ function CreateFunctionPage() {
           )}
         </div>
 
-        {/* Start Time - Using new Custom Time Picker - Index 11 */}
+        {/* 4. விழா ஆரம்ப நேரம் - Start Time - Index 3 */}
         <div className='flex flex-col gap-2'>
           <CustomTimePickerInput
             label='விழா ஆரம்ப நேரம்'
@@ -598,8 +355,8 @@ function CreateFunctionPage() {
             placeholderText='Select start time'
             timeIntervals={30}
             timeCaption='Time'
-            onKeyDown={(e) => handleKeyDown(e, 11)}
-            ref={(el) => (formRefs.current[11] = el)}
+            onKeyDown={(e) => handleKeyDown(e, 3)}
+            ref={(el) => (formRefs.current[3] = el)}
             name='function_start_time'
             className={
               errors.function_start_time ? 'border-red-500 bg-red-50' : ''
@@ -612,7 +369,7 @@ function CreateFunctionPage() {
           )}
         </div>
 
-        {/* End Date - Using new Custom Date Picker - Index 12 */}
+        {/* 5. விழா முடியும் தேதி - End Date - Index 4 */}
         <div className='flex flex-col gap-2'>
           <CustomDatePickerInput
             label='விழா முடியும் தேதி'
@@ -620,8 +377,8 @@ function CreateFunctionPage() {
             onChange={(date) => handleDateChange(date, 'function_end_date')}
             dateFormat='MM/dd/yyyy'
             placeholderText='Select end date'
-            onKeyDown={(e) => handleKeyDown(e, 12)}
-            ref={(el) => (formRefs.current[12] = el)}
+            onKeyDown={(e) => handleKeyDown(e, 4)}
+            ref={(el) => (formRefs.current[4] = el)}
             name='function_end_date'
             className={
               errors.function_end_date ? 'border-red-500 bg-red-50' : ''
@@ -634,7 +391,7 @@ function CreateFunctionPage() {
           )}
         </div>
 
-        {/* End Time - Using new Custom Time Picker - Index 13 */}
+        {/* 6. விழா முடியும் நேரம் - End Time - Index 5 */}
         <div className='flex flex-col gap-2'>
           <CustomTimePickerInput
             label='விழா முடியும் நேரம்'
@@ -644,8 +401,8 @@ function CreateFunctionPage() {
             placeholderText='Select end time'
             timeIntervals={30}
             timeCaption='Time'
-            onKeyDown={(e) => handleKeyDown(e, 13)}
-            ref={(el) => (formRefs.current[13] = el)}
+            onKeyDown={(e) => handleKeyDown(e, 5)}
+            ref={(el) => (formRefs.current[5] = el)}
             name='function_end_time'
             className={
               errors.function_end_time ? 'border-red-500 bg-red-50' : ''
@@ -658,11 +415,10 @@ function CreateFunctionPage() {
           )}
         </div>
 
-        {/* Total Days - Index 14 - Auto-calculated and non-editable */}
+        {/* 7. நாட்கள் - Total Days - Auto-calculated and non-editable - Display only */}
         <div className='flex flex-col gap-2'>
           <label className='text-md font-semibold'>
-            <span className='text-red-500 mr-1'>*</span>நாட்கள்
-            (Auto-calculated)
+            நாட்கள் (Auto-calculated)
           </label>
           <input
             type='number'
@@ -678,147 +434,177 @@ function CreateFunctionPage() {
           </span>
         </div>
 
-        {/* Empty div to maintain grid layout */}
-        <div></div>
-
-        {/* Bill Details Section */}
-        <div className='col-span-2'>
-          <h2 className='text-xl font-semibold mt-4 mb-4 text-blue-700'>
-            Bill Details
-          </h2>
-        </div>
-
-        {/* Owner Name - Index 15 */}
+        {/* 8. நடத்துபவர் - Function Owner Name - Index 6 (Focus shifts here after end time) */}
         <div className='flex flex-col gap-2'>
           <label className='text-md font-semibold'>
-            <span className='text-red-500 mr-1'>*</span>Owner Name
+            <span className='text-red-500 mr-1'>*</span>நடத்துபவர்
           </label>
           <input
             type='text'
-            className={getInputClassName('function_bill_details.owner_name')}
-            placeholder='Enter owner name'
-            value={formData.function_bill_details.owner_name}
+            className={getInputClassName('function_owner_name')}
+            placeholder='நடத்துபவர் பெயர்'
+            value={formData.function_owner_name}
             onChange={(e) =>
-              handleInputChange(
-                'function_bill_details.owner_name',
-                e.target.value
-              )
+              handleInputChange('function_owner_name', e.target.value)
             }
-            onKeyDown={(e) => handleKeyDown(e, 14)}
-            ref={(el) => (formRefs.current[14] = el)}
+            onKeyDown={(e) => handleKeyDown(e, 6)}
+            ref={(el) => (formRefs.current[6] = el)}
           />
-          {errors['function_bill_details.owner_name'] && (
+          {errors.function_owner_name && (
             <span className='text-red-500 text-sm'>
-              {errors['function_bill_details.owner_name']}
+              {errors.function_owner_name}
             </span>
           )}
         </div>
 
-        {/* Wife/Spouse Name - Index 16 */}
+        {/* 9. நடத்துபவர் கைபேசி எண் - Phone Number - Index 7 */}
         <div className='flex flex-col gap-2'>
           <label className='text-md font-semibold'>
-            <span className='text-red-500 mr-1'>*</span>Wife/Spouse Name
+            <span className='text-red-500 mr-1'>*</span>நடத்துபவர் கைபேசி எண்
           </label>
           <input
             type='text'
-            className={getInputClassName('function_bill_details.wife_name')}
-            placeholder='Enter spouse name'
-            value={formData.function_bill_details.wife_name}
+            className={getInputClassName('function_owner_phno')}
+            placeholder='நடத்துபவர் கைபேசி எண்'
+            value={formData.function_owner_phno}
             onChange={(e) =>
-              handleInputChange(
-                'function_bill_details.wife_name',
-                e.target.value
-              )
+              handleInputChange('function_owner_phno', e.target.value)
             }
-            onKeyDown={(e) => handleKeyDown(e, 15)}
-            ref={(el) => (formRefs.current[15] = el)}
+            onKeyDown={(e) => handleKeyDown(e, 7)}
+            ref={(el) => (formRefs.current[7] = el)}
           />
-          {errors['function_bill_details.wife_name'] && (
+          {errors.function_owner_phno && (
             <span className='text-red-500 text-sm'>
-              {errors['function_bill_details.wife_name']}
+              {errors.function_owner_phno}
             </span>
           )}
         </div>
 
-        {/* Spouse Occupation - Dropdown - Index 17 */}
+        {/* 10. விழா நாயகன் - Groom Name - Index 8 */}
+        <div className='flex flex-col gap-2'>
+          <label className='text-md font-semibold'>விழா நாயகன்</label>
+          <input
+            type='text'
+            className={getInputClassName('function_hero_name')}
+            placeholder='விழா நாயகன்'
+            value={formData.function_hero_name}
+            onChange={(e) =>
+              handleInputChange('function_hero_name', e.target.value)
+            }
+            onKeyDown={(e) => handleKeyDown(e, 8)}
+            ref={(el) => (formRefs.current[8] = el)}
+          />
+        </div>
+
+        {/* 11. விழா நாயகி - Bride Name - Index 9 */}
+        <div className='flex flex-col gap-2'>
+          <label className='text-md font-semibold'>விழா நாயகி</label>
+          <input
+            type='text'
+            className={getInputClassName('function_heroine_name')}
+            placeholder='விழா நாயகி'
+            value={formData.function_heroine_name}
+            onChange={(e) =>
+              handleInputChange('function_heroine_name', e.target.value)
+            }
+            onKeyDown={(e) => handleKeyDown(e, 9)}
+            ref={(el) => (formRefs.current[9] = el)}
+          />
+        </div>
+
+        {/* 12. மொத்த செலவு - Amount Spent - Index 10 */}
+        <div className='flex flex-col gap-2'>
+          <label className='text-md font-semibold'>
+            <span className='text-red-500 mr-1'>*</span>மொத்த செலவு
+          </label>
+          <input
+            type='number'
+            className={getInputClassName('function_amt_spent')}
+            placeholder='மொத்த செலவு'
+            value={formData.function_amt_spent}
+            onChange={(e) =>
+              handleInputChange('function_amt_spent', e.target.value)
+            }
+            onKeyDown={(e) => handleKeyDown(e, 10)}
+            ref={(el) => (formRefs.current[10] = el)}
+          />
+          {errors.function_amt_spent && (
+            <span className='text-red-500 text-sm'>
+              {errors.function_amt_spent}
+            </span>
+          )}
+        </div>
+
+        {/* 13. நடத்துபவர் ஊர் - City - Dropdown - Index 11 */}
         <div className='flex flex-col gap-2'>
           <CustomDropdownInput
-            label='Spouse Occupation'
-            placeholder='Select occupation'
-            options={occupations}
-            value={formData.function_bill_details.wife_occupation}
-            onChange={(value) =>
-              handleInputChange('function_bill_details.wife_occupation', value)
-            }
-            onKeyDown={(e) => handleKeyDown(e, 16)}
-            ref={(el) => (formRefs.current[16] = el)}
-            name='wife_occupation'
-            className={
-              errors['function_bill_details.wife_occupation']
-                ? 'border-red-500 bg-red-50'
-                : ''
-            }
-          />
-          {errors['function_bill_details.wife_occupation'] && (
-            <span className='text-red-500 text-sm'>
-              {errors['function_bill_details.wife_occupation']}
-            </span>
-          )}
-        </div>
-
-        {/* Function Place (Bill) - Index 18 */}
-        <div className='flex flex-col gap-2'>
-          <label className='text-md font-semibold'>
-            <span className='text-red-500 mr-1'>*</span>Function Place (Bill)
-          </label>
-          <input
-            type='text'
-            className={getInputClassName(
-              'function_bill_details.function_place'
-            )}
-            placeholder='Enter function place for bill'
-            value={formData.function_bill_details.function_place}
-            onChange={(e) =>
-              handleInputChange(
-                'function_bill_details.function_place',
-                e.target.value
-              )
-            }
-            onKeyDown={(e) => handleKeyDown(e, 17)}
-            ref={(el) => (formRefs.current[17] = el)}
-          />
-          {errors['function_bill_details.function_place'] && (
-            <span className='text-red-500 text-sm'>
-              {errors['function_bill_details.function_place']}
-            </span>
-          )}
-        </div>
-
-        {/* Function City (Bill) - Dropdown - Index 19 */}
-        <div className='flex flex-col gap-2'>
-          <CustomDropdownInput
-            label='Function City (Bill)'
-            placeholder='Select function city for bill'
+            label='நடத்துபவர் ஊர்'
+            placeholder='நடத்துபவர் ஊர்'
             options={cities}
-            value={formData.function_bill_details.function_city}
+            value={formData.function_owner_city}
             onChange={(value) =>
-              handleInputChange('function_bill_details.function_city', value)
+              handleInputChange('function_owner_city', value)
             }
-            onKeyDown={(e) => handleKeyDown(e, 18)}
-            ref={(el) => (formRefs.current[18] = el)}
-            name='function_city_bill'
+            onKeyDown={(e) => handleKeyDown(e, 11)}
+            ref={(el) => (formRefs.current[11] = el)}
+            name='function_owner_city'
             className={
-              errors['function_bill_details.function_city']
-                ? 'border-red-500 bg-red-50'
-                : ''
+              errors.function_owner_city ? 'border-red-500 bg-red-50' : ''
             }
           />
-          {errors['function_bill_details.function_city'] && (
+          {errors.function_owner_city && (
             <span className='text-red-500 text-sm'>
-              {errors['function_bill_details.function_city']}
+              {errors.function_owner_city}
             </span>
           )}
         </div>
+
+        {/* 14. நடத்துபவர் முகவரி - Address - Index 12 */}
+        <div className='flex flex-col gap-2'>
+          <label className='text-md font-semibold'>நடத்துபவர் முகவரி</label>
+          <input
+            type='text'
+            className={getInputClassName('function_owner_address')}
+            placeholder='நடத்துபவர் முகவரி'
+            value={formData.function_owner_address}
+            onChange={(e) =>
+              handleInputChange('function_owner_address', e.target.value)
+            }
+            onKeyDown={(e) => handleKeyDown(e, 12)}
+            ref={(el) => (formRefs.current[12] = el)}
+          />
+        </div>
+
+        {/* Function Place - Index 13 */}
+        <div className='flex flex-col gap-2'>
+          <label className='text-md font-semibold'>
+            <span className='text-red-500 mr-1'>*</span>விழா நடைபெறும் இடம்
+          </label>
+          <input
+            type='text'
+            className={getInputClassName('function_held_place')}
+            placeholder='விழா நடைபெறும் இடம்'
+            value={formData.function_held_place}
+            onChange={(e) =>
+              handleInputChange('function_held_place', e.target.value)
+            }
+            onKeyDown={(e) => handleKeyDown(e, 13)}
+            ref={(el) => (formRefs.current[13] = el)}
+          />
+          {errors.function_held_place && (
+            <span className='text-red-500 text-sm'>
+              {errors.function_held_place}
+            </span>
+          )}
+        </div>
+      </div>
+      <div className='flex justify-center'>
+        <button
+          className='bg-darkBlue w-64 h-12 flex justify-center gap-2 items-center hover:scale-105 transition-all text-white  rounded shadow'
+          onClick={handleSubmit}
+        >
+          Save <FaSave />
+        </button>
       </div>
     </div>
   );
