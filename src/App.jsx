@@ -3,10 +3,10 @@ import { FLOATING_SIDBAR_POSITIONS } from './helpers/enum';
 
 import { Outlet } from 'react-router-dom';
 import useIsMobile from './hooks/useIsMobile';
-import MobileMessage from './components/layout/MobileMessage';
 import Sidebar from './components/layout/Sidebar/Sidebar';
 import FloatingSideBar from './components/layout/Sidebar/FloatingSidebar';
 import { dbManager } from './services/IndexedDBManager';
+import MobileMessage from './components/layout/MobileMessage';
 
 function App() {
   const [hoveredItem, setHoveredItem] = useState(null);
