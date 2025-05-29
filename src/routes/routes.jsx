@@ -1,7 +1,7 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 import App from '../App';
-import NotFoundPage from '../pages/Error/NotFoundPage';
+import NotFoundPage from '../pages/error/NotFoundPage';
 
 import PayerListing from '../pages/Payers/PayerListing';
 
