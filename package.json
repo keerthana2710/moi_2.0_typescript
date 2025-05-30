@@ -38,7 +38,7 @@
     "@eslint/js": "^9.25.0",
     "@types/node": "^22.15.21",
     "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
+    "@types/react-dom": "^18.2.0", 
     "@types/react-datepicker": "^4.19.6",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
