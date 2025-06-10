@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
@@ -6,46 +6,47 @@ import { setItem } from '../../utils/LocalStorage';
 import { toast } from 'react-toastify';
 import useAuth from '@/context/useAuth';
 import axiosInstance from '@/utils/AxiosInstance';
+import { LoginFormData, User } from '@/types/auth';
 
-const saveAuth = (user) => {
+const saveAuth = (user: User) => {
   setItem('access-token', JSON.stringify(user.token));
   setItem('user', JSON.stringify(user));
   setItem('isAdmin', JSON.stringify(user.isAdmin));
 };
 
-const loginRequest = async (form) => {
+const loginRequest = async (form: LoginFormData): Promise<User> => {
   const { data } = await axiosInstance.post('/auth/login', form, {
     headers: { 'Content-Type': 'application/json' },
   });
   return data.data;
 };
 
-export default function Login() {
-  const [form, setForm] = useState({ email: '', password: '' });
-  const [error, setError] = useState('');
+const Login: React.FC = () => {
+  const [form, setForm] = useState<LoginFormData>({ email: '', password: '' });
+  const [error, setError] = useState<string>('');
   const { setToken, setIsAdmin } = useAuth();
-  const [showPwd, setShowPwd] = useState(false);
+  const [showPwd, setShowPwd] = useState<boolean>(false);
   const navigate = useNavigate();
 
   const loginMutation = useMutation({
     mutationFn: loginRequest,
-    onSuccess: ({ ...user }) => {
+    onSuccess: (user: User) => {
       saveAuth(user);
       setToken(user.token);
       setIsAdmin(user.isAdmin);
       toast.success('Logged in Successfully');
       navigate('/');
     },
-    onError: (err) => {
+    onError: (err: any) => {
       const msg = err?.response?.data?.message || 'Invalid email or password';
       setError(msg);
     },
   });
 
-  const handleChange = (e) =>
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     if (!form.email || !form.password) {
@@ -108,14 +109,14 @@ export default function Login() {
 
           <button
             type='submit'
-            disabled={loginMutation.isLoading}
+            disabled={loginMutation.isPending}
             className={`w-full py-3 bg-darkBlue text-white font-semibold rounded-md transition-all ${
-              loginMutation.isLoading
+              loginMutation.isPending
                 ? 'opacity-60 cursor-not-allowed'
                 : 'hover:scale-105'
             }`}
           >
-            {loginMutation.isLoading ? 'Logging in…' : 'Login'}
+            {loginMutation.isPending ? 'Logging in…' : 'Login'}
           </button>
         </form>
 
@@ -131,4 +132,6 @@ export default function Login() {
       </div>
     </div>
   );
-}
+};
+
+export default Login;

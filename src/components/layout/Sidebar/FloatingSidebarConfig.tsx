@@ -1,4 +1,24 @@
-export const SIDEBAR_CONFIG = {
+interface SidebarItem {
+  title: string;
+  link: string;
+}
+
+interface SidebarSection {
+  sub_heading: string;
+  data: SidebarItem[];
+}
+
+interface SidebarConfig {
+  root_heading: string;
+  id: number;
+  extension_data: SidebarSection[];
+}
+
+interface SidebarConfigMap {
+  [key: number]: SidebarConfig;
+}
+
+export const SIDEBAR_CONFIG: SidebarConfigMap = {
   1: {
     root_heading: 'Functions',
     id: 1,

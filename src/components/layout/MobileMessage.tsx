@@ -1,4 +1,6 @@
-const MobileMessage = () => {
+import React from 'react';
+
+const MobileMessage: React.FC = () => {
   return (
     <div className='lg:hidden min-h-screen flex items-center justify-center px-4'>
       <div className='bg-red-50 border border-red-200 text-red-800 max-w-md w-full p-6 rounded-xl shadow-md text-center'>

@@ -1,15 +1,17 @@
+import React from 'react';
 import { LuSearch } from 'react-icons/lu';
 import CustomButton from './CustomButton';
 import { FaSave } from 'react-icons/fa';
+import { PageHeaderProps } from '@/types/ui';
 
-function PageHeaderWithSearch({
+const PageHeaderWithSearch: React.FC<PageHeaderProps> = ({
   header,
   value,
   onChange,
   disableSearch,
   handleSubmit,
   disableButton,
-}) {
+}) => {
   return (
     <div className='h-14 flex justify-between items-center'>
       <p className='text-black font-semibold text-3xl'>{header}</p>
@@ -40,6 +42,6 @@ function PageHeaderWithSearch({
       )}
     </div>
   );
-}
+};
 
 export default PageHeaderWithSearch;

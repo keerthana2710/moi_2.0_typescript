@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, forwardRef } from 'react';
+import { CustomDropdownProps } from '@/types/ui';
 
-const CustomDropdown = forwardRef(
+const CustomDropdown = forwardRef<HTMLButtonElement, CustomDropdownProps>(
   (
     {
       label,
@@ -20,8 +21,8 @@ const CustomDropdown = forwardRef(
   ) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
-    const dropdownRef = useRef(null);
-    const searchInputRef = useRef(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    const searchInputRef = useRef<HTMLInputElement>(null);
 
     // Filter options based on search term
     const filteredOptions = options.filter((option) =>
@@ -36,14 +37,14 @@ const CustomDropdown = forwardRef(
     };
 
     // Handle option selection
-    const handleOptionSelect = (option) => {
+    const handleOptionSelect = (option: { value: string; label: string }) => {
       onChange(option.value);
       setIsOpen(false);
       setSearchTerm('');
     };
 
     // Handle search input change
-    const handleSearchChange = (e) => {
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const term = e.target.value;
       setSearchTerm(term);
       if (onSearch) {
@@ -52,14 +53,14 @@ const CustomDropdown = forwardRef(
     };
 
     // Clear selection
-    const clearSelection = (e) => {
+    const clearSelection = (e: React.MouseEvent) => {
       e.stopPropagation();
       onChange('');
       setSearchTerm('');
     };
 
     // Handle keyboard navigation
-    const handleKeyDown = (e) => {
+    const handleKeyDown = (e: React.KeyboardEvent) => {
       if (onKeyDown) {
         onKeyDown(e);
       }
@@ -76,10 +77,10 @@ const CustomDropdown = forwardRef(
 
     // Close dropdown when clicking outside
     useEffect(() => {
-      const handleClickOutside = (event) => {
+      const handleClickOutside = (event: MouseEvent) => {
         if (
           dropdownRef.current &&
-          !dropdownRef.current.contains(event.target)
+          !dropdownRef.current.contains(event.target as Node)
         ) {
           setIsOpen(false);
         }

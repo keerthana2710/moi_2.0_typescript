@@ -1,7 +1,12 @@
 import React from 'react';
 import { FileX } from 'lucide-react';
 
-const NoDataPlaceholder = ({
+interface NoDataPlaceholderProps {
+  message?: string;
+  subtext?: string;
+}
+
+const NoDataPlaceholder: React.FC<NoDataPlaceholderProps> = ({
   message = 'தகவல்கள் இல்லை',
   subtext = 'உங்கள் தேடல் அல்லது வடிகட்டுதல்களை மாற்றி முயற்சிக்கவும்.',
 }) => {

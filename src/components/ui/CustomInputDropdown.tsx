@@ -1,6 +1,19 @@
-import { useEffect, useState, useRef, forwardRef } from 'react';
+import React, { useEffect, useState, useRef, forwardRef } from 'react';
 
-export const CustomDropdownInput = forwardRef(
+interface CustomDropdownInputProps {
+  placeholder?: string;
+  label?: string;
+  options: string[];
+  onChange: (value: string) => void;
+  onKeyDown?: (e: React.KeyboardEvent) => void;
+  value?: string;
+  required?: boolean;
+  name?: string;
+  disabled?: boolean;
+  className?: string;
+}
+
+export const CustomDropdownInput = forwardRef<HTMLInputElement, CustomDropdownInputProps>(
   (
     {
       placeholder,
@@ -12,6 +25,7 @@ export const CustomDropdownInput = forwardRef(
       required = true,
       name,
       disabled = false,
+      className = '',
     },
     ref
   ) => {
@@ -19,9 +33,9 @@ export const CustomDropdownInput = forwardRef(
     const [isOpen, setIsOpen] = useState(false);
     const [filteredOptions, setFilteredOptions] = useState(options);
     const [focusedIndex, setFocusedIndex] = useState(-1);
-    const dropdownRef = useRef(null);
-    const optionsRef = useRef([]);
-    const inputRef = useRef(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    const optionsRef = useRef<(HTMLDivElement | null)[]>([]);
+    const inputRef = useRef<HTMLInputElement>(null);
 
     // Handle forwarded ref
     useEffect(() => {
@@ -55,10 +69,10 @@ export const CustomDropdownInput = forwardRef(
 
     useEffect(() => {
       // Handle clicks outside the dropdown to close it
-      const handleClickOutside = (event) => {
+      const handleClickOutside = (event: MouseEvent) => {
         if (
           dropdownRef.current &&
-          !dropdownRef.current.contains(event.target)
+          !dropdownRef.current.contains(event.target as Node)
         ) {
           setIsOpen(false);
         }
@@ -70,14 +84,14 @@ export const CustomDropdownInput = forwardRef(
       };
     }, []);
 
-    const handleInputChange = (e) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const newValue = e.target.value;
       setInputValue(newValue);
       if (onChange) onChange(newValue);
       if (!isOpen && newValue) setIsOpen(true);
     };
 
-    const handleOptionClick = (option) => {
+    const handleOptionClick = (option: string) => {
       setInputValue(option);
       if (onChange) onChange(option);
       setIsOpen(false);
@@ -96,7 +110,7 @@ export const CustomDropdownInput = forwardRef(
       }
     };
 
-    const handleKeyDown = (e) => {
+    const handleKeyDown = (e: React.KeyboardEvent) => {
       // If dropdown is not open and Enter key is pressed, call external handler to navigate
       if (e.key === 'Enter' && !isOpen) {
         if (externalKeyDown) {
@@ -196,7 +210,7 @@ export const CustomDropdownInput = forwardRef(
             onChange={handleInputChange}
             onClick={() => setIsOpen(true)}
             onKeyDown={handleKeyDown}
-            className='pl-4 pr-10 rounded-md h-10 border w-full focus:outline-none focus:ring-2 focus:ring-darkBlue'
+            className={`pl-4 pr-10 rounded-md h-10 border w-full focus:outline-none focus:ring-2 focus:ring-darkBlue ${className}`}
             ref={inputRef}
             autoComplete='off'
             disabled={disabled}
@@ -246,3 +260,5 @@ export const CustomDropdownInput = forwardRef(
     );
   }
 );
+
+CustomDropdownInput.displayName = 'CustomDropdownInput';

@@ -1,13 +1,16 @@
-// AuthProvider.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ReactNode } from 'react';
 import { getItem } from '../utils/LocalStorage';
 import AuthContext from './AuthContext';
 
-export default function AuthProvider({ children }) {
-  const [token, setToken] = useState(() => {
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export default function AuthProvider({ children }: AuthProviderProps) {
+  const [token, setToken] = useState<string | null>(() => {
     return getItem('access-token');
   });
-  const [isAdmin, setIsAdmin] = useState(() => {
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(() => {
     return getItem('isAdmin');
   });
 

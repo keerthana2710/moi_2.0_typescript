@@ -1,19 +1,24 @@
+import React, { useState } from 'react';
 import {
   TbLayoutSidebarRightCollapse,
   TbLayoutSidebarRightExpand,
 } from 'react-icons/tb';
 import { FiLogOut } from 'react-icons/fi';
 import react from '../../../assets/react.svg';
-
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
 import { SIDEBAR_MENU_LIST } from '../../../helpers/enum';
 import { isSidebarItemActive } from '../../../helpers/pathMatcher';
 import { removeItem } from '../../../utils/LocalStorage';
 import { toast } from 'react-toastify';
+import { SidebarProps } from '@/types';
 
-function Sidebar({ hoveredItem, setHoveredItem, sideBarOpen, setSideBarOpen }) {
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
+const Sidebar: React.FC<SidebarProps> = ({ 
+  hoveredItem, 
+  setHoveredItem, 
+  sideBarOpen, 
+  setSideBarOpen 
+}) => {
+  const [showLogoutModal, setShowLogoutModal] = useState<boolean>(false);
   const toggleSidebar = () => setSideBarOpen((prev) => !prev);
   const location = useLocation();
   const path = location.pathname;
@@ -174,6 +179,6 @@ function Sidebar({ hoveredItem, setHoveredItem, sideBarOpen, setSideBarOpen }) {
       )}
     </>
   );
-}
+};
 
 export default Sidebar;

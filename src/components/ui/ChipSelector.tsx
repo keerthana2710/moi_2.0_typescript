@@ -1,4 +1,7 @@
-function ChipSelector({ pageFetch, label, setPageFetch }) {
+import React from 'react';
+import { ChipSelectorProps } from '@/types/ui';
+
+const ChipSelector: React.FC<ChipSelectorProps> = ({ pageFetch, label, setPageFetch }) => {
   const pageGroup = [20, 40, 60, 80, 100];
 
   return (
@@ -22,6 +25,6 @@ function ChipSelector({ pageFetch, label, setPageFetch }) {
       </div>
     </div>
   );
-}
+};
 
 export default ChipSelector;

@@ -1,8 +1,9 @@
 import { useContext } from 'react';
 import { toast } from 'react-toastify';
 import AuthContext from './AuthContext';
+import { AuthContextType } from '@/types/auth';
 
-export default function useAuth() {
+export default function useAuth(): AuthContextType {
   const authContext = useContext(AuthContext);
 
   if (!authContext) {

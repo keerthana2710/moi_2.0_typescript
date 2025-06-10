@@ -1,23 +1,52 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
-
 import { toast } from 'react-toastify';
 import axiosInstance from '@/utils/AxiosInstance';
+import { RegisterFormData } from '@/types/auth';
 
-export default function Register() {
+interface FieldProps {
+  label: string;
+  type?: string;
+  name: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  placeholder?: string;
+  required?: boolean;
+  minLength?: number;
+}
+
+const Field: React.FC<FieldProps> = ({ label, ...inputProps }) => {
+  return (
+    <div>
+      <label
+        className='block text-gray-700 font-medium mb-1'
+        htmlFor={inputProps.name}
+      >
+        {label}
+      </label>
+      <input
+        {...inputProps}
+        id={inputProps.name}
+        className='w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400'
+      />
+    </div>
+  );
+};
+
+const Register: React.FC = () => {
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<RegisterFormData>({
     username: '',
     email: '',
     password: '',
     confirmPassword: '',
   });
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string>('');
 
   const registerMutation = useMutation({
-    mutationFn: async (payload) => {
+    mutationFn: async (payload: Omit<RegisterFormData, 'confirmPassword'>) => {
       const { data } = await axiosInstance.post('/auth/register', payload, {
         headers: { 'Content-Type': 'application/json' },
       });
@@ -27,17 +56,16 @@ export default function Register() {
       navigate('/login');
       toast.success('Registered successfully');
     },
-    onError: (error) => {
+    onError: (error: any) => {
       const msg = error?.response?.data?.error || 'Something went wrong';
       toast.error(msg);
-      // setError(msg);
     },
   });
 
-  const handleChange = (e) =>
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
-  const validate = () => {
+  const validate = (): string => {
     if (!/^[\w-]{3,}$/i.test(form.username))
       return 'Username must be at least 3 characters';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
@@ -48,7 +76,7 @@ export default function Register() {
     return '';
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const validationError = validate();
     if (validationError) return setError(validationError);
@@ -120,10 +148,10 @@ export default function Register() {
 
           <button
             type='submit'
-            disabled={registerMutation.isLoading}
+            disabled={registerMutation.isPending}
             className='w-full py-3 bg-darkBlue text-white font-semibold rounded-md hover:scale-105 duration-200 transition-all disabled:opacity-50'
           >
-            {registerMutation.isLoading ? 'Registering...' : 'Register'}
+            {registerMutation.isPending ? 'Registering...' : 'Register'}
           </button>
         </form>
         <p className='mt-6 text-center text-gray-600'>
@@ -138,22 +166,6 @@ export default function Register() {
       </div>
     </div>
   );
-}
+};
 
-function Field({ label, ...inputProps }) {
-  return (
-    <div>
-      <label
-        className='block text-gray-700 font-medium mb-1'
-        htmlFor={inputProps.name}
-      >
-        {label}
-      </label>
-      <input
-        {...inputProps}
-        id={inputProps.name}
-        className='w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400'
-      />
-    </div>
-  );
-}
+export default Register;

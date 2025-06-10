@@ -1,4 +1,3 @@
-// hooks/useUniqueValues.js
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { dbManager } from '@/services/IndexedDBManager';
 import { uniqueValuesAPI } from '@/services/UniqueValuesApi';
@@ -13,13 +12,33 @@ export const UNIQUE_VALUES_KEYS = {
   workTypes: ['uniqueValues', 'workTypes'],
 };
 
+interface UniqueValuesData {
+  names: string[];
+  gifts: string[];
+  relations: string[];
+  cities: string[];
+  workTypes: string[];
+}
+
+interface UseUniqueValuesReturn {
+  data: UniqueValuesData | undefined;
+  isLoading: boolean;
+  isError: boolean;
+  error: Error | null;
+  refetch: () => void;
+  addUniqueValue: (params: { type: string; value: string }) => void;
+  refreshData: () => void;
+  isAddingValue: boolean;
+  isRefreshing: boolean;
+}
+
 // Custom hook to fetch and manage all unique values
-export const useUniqueValues = () => {
+export const useUniqueValues = (): UseUniqueValuesReturn => {
   const queryClient = useQueryClient();
 
   const query = useQuery({
     queryKey: UNIQUE_VALUES_KEYS.all,
-    queryFn: async () => {
+    queryFn: async (): Promise<UniqueValuesData> => {
       try {
         // First, try to get data from IndexedDB
         const cachedData = await dbManager.getAllUniqueValues();
@@ -38,7 +57,7 @@ export const useUniqueValues = () => {
 
         if (hasAllData) {
           console.log('Loading unique values from IndexedDB');
-          return cachedData;
+          return cachedData as UniqueValuesData;
         }
 
         // If not in cache or incomplete, fetch from API
@@ -60,13 +79,13 @@ export const useUniqueValues = () => {
         // Fallback to cached data if API fails
         const cachedData = await dbManager.getAllUniqueValues();
         if (Object.keys(cachedData).length > 0) {
-          return cachedData;
+          return cachedData as UniqueValuesData;
         }
         throw error;
       }
     },
     staleTime: 24 * 60 * 60 * 1000, // 24 hours
-    cacheTime: 7 * 24 * 60 * 60 * 1000, // 7 days
+    gcTime: 7 * 24 * 60 * 60 * 1000, // 7 days
     refetchOnWindowFocus: false,
     retry: (failureCount) => {
       // Don't retry if we're offline
@@ -76,23 +95,23 @@ export const useUniqueValues = () => {
 
   // Mutation to add new unique value
   const addUniqueValueMutation = useMutation({
-    mutationFn: async ({ type, value }) => {
+    mutationFn: async ({ type, value }: { type: string; value: string }) => {
       // Add to IndexedDB
       const updatedData = await dbManager.addUniqueValue(type, value);
       return { type, data: updatedData };
     },
     onSuccess: ({ type, data }) => {
       // Update the query cache
-      queryClient.setQueryData(UNIQUE_VALUES_KEYS.all, (oldData) => ({
+      queryClient.setQueryData(UNIQUE_VALUES_KEYS.all, (oldData: UniqueValuesData | undefined) => ({
         ...oldData,
         [type]: data,
-      }));
+      } as UniqueValuesData));
     },
   });
 
   // Mutation to refresh data from API
   const refreshDataMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (): Promise<UniqueValuesData> => {
       const apiData = await uniqueValuesAPI.getAllUniqueValues();
 
       // Update IndexedDB
@@ -119,33 +138,33 @@ export const useUniqueValues = () => {
     refetch: query.refetch,
     addUniqueValue: addUniqueValueMutation.mutate,
     refreshData: refreshDataMutation.mutate,
-    isAddingValue: addUniqueValueMutation.isLoading,
-    isRefreshing: refreshDataMutation.isLoading,
+    isAddingValue: addUniqueValueMutation.isPending,
+    isRefreshing: refreshDataMutation.isPending,
   };
 };
 
 // Individual hooks for specific types
-export const useUniqueNames = () => {
+export const useUniqueNames = (): string[] => {
   const { data } = useUniqueValues();
   return data?.names || [];
 };
 
-export const useUniqueGifts = () => {
+export const useUniqueGifts = (): string[] => {
   const { data } = useUniqueValues();
   return data?.gifts || [];
 };
 
-export const useUniqueRelations = () => {
+export const useUniqueRelations = (): string[] => {
   const { data } = useUniqueValues();
   return data?.relations || [];
 };
 
-export const useUniqueCities = () => {
+export const useUniqueCities = (): string[] => {
   const { data } = useUniqueValues();
   return data?.cities || [];
 };
 
-export const useUniqueWorkTypes = () => {
+export const useUniqueWorkTypes = (): string[] => {
   const { data } = useUniqueValues();
   return data?.workTypes || [];
 };
